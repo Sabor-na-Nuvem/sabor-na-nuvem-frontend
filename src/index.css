@@ -1,0 +1,90 @@
+:root {
+  /* --- PALETA DE IDENTIDADE (BRAND) --- */
+  --color-primary: #c25153;
+  --color-secondary: #ffcf2a;
+
+  /* --- FUNDOS (BACKGROUNDS) --- */
+  --bg-app: #f7f9fc; /* Fundo Principal da Página */
+  --bg-surface: #ffffff; /* Fundo de Cards/Container (Geralmente branco puro) */
+
+  /* (Preto 5%) - Ótimo para hovers, bordas sutis ou divisores */
+  --color-surface-subtle: rgba(0, 0, 0, 0.05);
+
+  /* --- TIPOGRAFIA (TEXT) --- */
+  --text-heading: #212121; /* Títulos e Detalhes (Preto quase puro) */
+  --text-body: #555759; /* Texto corrido (Cinza escuro para leitura confortável) */
+  --text-on-primary: #ffffff; /* Texto que vai em cima da cor principal (botões) */
+
+  /* --- FEEDBACK (STATUS) --- */
+  --status-success: #4caf50;
+  --status-error: #f44336;
+  --status-warning: #ff9800;
+
+  /* --- VARIÁVEL DE FONTE --- */
+  --font-family-primary: 'Poppins', sans-serif;
+
+  --section-padding: clamp(3.75rem, 8vw, 6.25rem);
+  --container-gap: clamp(3rem, 6vw, 4rem);
+  --font-base: clamp(1rem, 3vw, 2rem);
+  --max-width: 1280px;
+  --gutter: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-primary); 
+  font-weight: 500;
+  background-color: var(--bg-app);
+  color: var(--text-body);
+  line-height: 1.5;
+}
+
+.section {
+  width: 100%;
+  padding: var(--section-padding) var(--gutter);
+
+  border-bottom: 1px solid #ddd;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--container-gap);
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.1;
+  text-align: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-primary);
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.text-center {
+  text-align: center;
+  max-width: 60ch; /* ~60 caracteres por linha */
+  margin-inline: auto;
+}
+
+.text-left {
+  text-align: left;
+}

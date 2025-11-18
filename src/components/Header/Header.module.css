@@ -1,0 +1,112 @@
+.header {
+  background-color: var(--bg-surface);
+  box-shadow: 0 2px 4px var(--color-surface-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 1rem var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- Mobile (Padrão) --- */
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.brandNameText {
+  display: none; 
+  margin-left: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text-heading); 
+}
+
+.desktopNav {
+  display: none;
+}
+
+.menuToggle {
+  /* Ícone Hambúrguer */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: var(--text-heading);
+}
+
+/* --- Menu Lateral (Drawer) Mobile --- */
+
+.mobileNav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%; /* Ocupa 100% da largura, ou 80% se preferir uma barra */
+  height: 100vh;
+  background-color: var(--bg-surface);
+  box-shadow: -4px 0 10px var(--color-surface-subtle);
+  padding: 2rem;
+  padding-top: 5rem;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  z-index: 99;
+}
+
+.mobileNav.open {
+  transform: translateX(0); /* Mostra o menu */
+}
+
+.navLink {
+  color: var(--text-heading);
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-surface-subtle);
+}
+
+.logoImage {
+  display: block;
+  max-width: 100%;
+  height: 35px; 
+  object-fit: contain; 
+}
+
+/* --- Desktop (Breakpoint) --- */
+
+@media (min-width: 1024px) {
+  .brandNameText {
+    display: block;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .menuToggle {
+    display: none;
+  }
+
+  .desktopNav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .logoImage {
+    height: 40px; 
+  }
+}

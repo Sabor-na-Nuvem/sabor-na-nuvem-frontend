@@ -1,0 +1,132 @@
+.footer {
+  background-color: var(--bg-surface);
+  padding-top: 3rem;
+  color: var(--text-body);
+  font-weight: 400;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 2rem;
+
+  /* Padrão Mobile: Coluna Vertical */
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem; /* Espaço entre as seções (Logo e Links) */
+  align-items: flex-start;
+}
+
+/* --- Estilos Mobile (Padrão) --- */
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text-heading);
+  text-decoration: none;
+  display: block;
+}
+
+.slogan {
+  color: var(--text-body);
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.links {
+  display: flex;
+  flex-direction: column; /* Colunas de links empilhadas */
+  gap: 2rem;
+  width: 100%;
+}
+
+.columnTitle {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text-heading);
+  margin-bottom: 0.75rem;
+}
+
+.link {
+  display: block;
+  color: var(--text-body);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: var(--color-primary);
+}
+
+.socials {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.socialIcon {
+  font-size: 1.2rem;
+  color: var(--text-heading);
+  text-decoration: none;
+}
+
+.copyrightMobile {
+  font-size: 0.8rem;
+  color: var(--text-body);
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.copyrightDesktop {
+  display: none;
+}
+
+.logoImage {
+  display: block;
+  max-width: 100%;
+  height: 35px; 
+  object-fit: contain; 
+}
+
+
+/* --- Estilos Desktop (Breakpoint) --- */
+
+@media (min-width: 1024px) {
+  .container {
+    flex-direction: row; /* Volta a ser Flexbox horizontal para a separação principal */
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .about {
+    flex-basis: 30%;
+  }
+
+  .links {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+    flex-basis: 50%;
+  }
+
+  .copyrightMobile {
+    display: none;
+  }
+
+  .copyrightDesktop {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--color-surface-subtle);
+    color: var(--text-body);
+    margin-top: 2rem;
+  }
+
+  .logoImage {
+    height: 40px; 
+  }
+}

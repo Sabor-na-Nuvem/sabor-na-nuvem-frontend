@@ -1,0 +1,49 @@
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+/* Variante PRIMARY (Botão Sólido Principal) */
+.primary {
+  background-color: var(--color-primary);
+  color: var(--text-on-primary);
+}
+
+.primary:hover {
+  filter: brightness(0.9);
+}
+
+/* Variante OUTLINE-RED (Borda Principal) */
+.outline-red {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--text-body); 
+}
+
+.outline-red:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+/* Variante OUTLINE-YELLOW (Borda Secundária) */
+.outline-yellow {
+  background-color: transparent;
+  border: 2px solid var(--color-secondary);
+  color: var(--text-body);
+}
+
+.outline-yellow:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.icon {
+  font-size: 1.2rem;
+}
