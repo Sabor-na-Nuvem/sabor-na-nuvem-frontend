@@ -1,0 +1,58 @@
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.inputField {
+  border: none;
+  border-bottom: 2px solid var(--color-surface-subtle);
+  padding: 0.5rem 0.25rem;
+  font-size: 1rem;
+  color: var(--text-heading);
+  transition: border-bottom-color 0.2s ease-in-out;
+  background-color: transparent;
+
+  outline: none;
+}
+
+/* Estilo ao Focar (Focus) */
+.inputField:focus {
+  border-bottom-color: var(--color-primary);
+}
+
+/* Estilo de Erro (Chave para o requisito) */
+.inputField.error {
+  border-bottom-color: var(--status-error);
+}
+
+.errorMessage {
+  font-size: 0.8rem;
+  color: var(--status-error);
+  overflow: hidden;
+
+  transition: opacity 0.3s ease-out, max-height 0.3s 0.3s ease-out,
+    margin-top 0.3s ease-out;
+
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  padding: 0;
+}
+
+.errorMessage.visible {
+  transition: opacity 0.3s ease-out, max-height 0.3s ease-out, margin-top 0.3s ease-out;
+  
+  opacity: 1;
+  max-height: 20px;
+  margin-top: 0.25rem;
+}

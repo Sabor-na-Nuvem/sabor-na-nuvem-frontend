@@ -1,0 +1,27 @@
+.returnLink {
+  display: inline-flex;
+  align-items: center;
+
+  color: var(--text-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+
+  transition: color 0.2s ease-out;
+}
+
+.returnLink:hover {
+  color: var(--color-primary);
+}
+
+.icon {
+  font-size: 1.2rem;
+  margin-right: 0.25rem;
+
+  line-height: 1;
+  transform: translateY(1px);
+}
+
+.text {
+  line-height: 1;
+}

@@ -1,5 +1,5 @@
-import Section from "../components/Section";
-import Button from "../components/Button"
+import Section from "../../components/Section";
+import Button from "../../components/Button"
 
 const Home = () => (
   <Section id="home">

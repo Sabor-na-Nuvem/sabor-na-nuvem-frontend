@@ -1,7 +1,7 @@
-// src/components/Button/Button.jsx
 import styles from "./Button.module.css";
 
 const Button = ({
+  type = "text",
   children,
   variant = "primary",
   onClick,
@@ -12,7 +12,7 @@ const Button = ({
   const classNames = `${styles.btn} ${styles[variant]} ${className}`;
 
   return (
-    <button className={classNames} onClick={onClick}>
+    <button className={classNames} onClick={onClick} type={type}>
       {icon && <span className={styles.icon}>{icon}</span>}
       {children}
     </button>

@@ -1,15 +1,28 @@
 .btn {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.2s;
   border: none;
+  
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-weight: 600;
+  
+  line-height: 1; 
+  text-decoration: none;
+
+  transition: transform 0.1s ease-out, background-color 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.95); 
+  box-shadow: none; 
+}
+
+.full-width {
+  width: 100%;
 }
 
 /* Variante PRIMARY (Botão Sólido Principal) */
@@ -44,6 +57,7 @@
   background-color: var(--color-surface-subtle);
 }
 
+/* Variante ICON (Só um ícone) */
 .icon {
-  font-size: 1.2rem;
+  line-height: 1;
 }

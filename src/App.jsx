@@ -1,7 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./pages/home";
-import Login from "./pages/login";
+import Home from "./pages/Home/";
+import Login from "./pages/Login/";
 import DefaultLayout from "./layouts/DefaultLayout";
+import Cadastro from "./pages/Cadastro/Cadastro";
 
 /* --- O APP PRINCIPAL --- */
 function App() {
@@ -14,7 +15,7 @@ function App() {
 
       {/* GRUPO 2: Rotas "Soltas" (Sem Header/Footer) */}
       <Route path="/login" element={<Login />} />
-      {/* <Route path="/cadastro" element={<Cadastro />} /> */}
+      <Route path="/cadastro" element={<Cadastro />} />
     </Routes>
   );
 }

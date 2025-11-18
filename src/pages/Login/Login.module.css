@@ -1,0 +1,111 @@
+.loginPageWrapper {
+  height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: var(--bg-app);
+}
+
+.loginPanel {
+  background: var(--bg-surface);
+  padding: 2rem;
+  border-radius: 12px;
+
+  box-shadow: 0 4px 10px var(--color-surface-subtle);
+
+  text-align: center;
+  width: 100%;
+
+  max-width: 500px;
+}
+
+.logoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.logoImage {
+  display: block;
+  max-width: 100%;
+  height: 80px;
+  object-fit: contain;
+}
+
+.logoTitle {
+  margin-top: 0.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+/* --- Formulário (Form) --- */
+.authForm {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.fullWidth {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.returnLink {
+  color: var(--text-body);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.orDivider {
+  color: var(--text-body);
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+
+.googleButton {
+  height: 40px;
+  border: 2px solid var(--color-secondary);
+  color: var(--text-heading);
+}
+
+.forgotPassword {
+  display: block;
+  text-align: right;
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.forgotPasswordText {
+  font-size: 0.85rem;
+  color: var(--text-body);
+  text-decoration: none;
+  padding: 1rem;
+  padding-right: 0;
+}
+
+.registerPrompt {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  margin-top: 1rem;
+}
+
+.registerLink {
+  color: var(--color-primary);
+  font-weight: bold;
+  text-decoration: none;
+  margin-left: 0.3rem;
+
+  transition: color 0.2s;
+}
+
+.registerLink:hover {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
