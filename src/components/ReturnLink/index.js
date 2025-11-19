@@ -1,1 +1,1 @@
-export { default as ReturnLink } from './ReturnLink.jsx';
+export { default } from './ReturnLink';

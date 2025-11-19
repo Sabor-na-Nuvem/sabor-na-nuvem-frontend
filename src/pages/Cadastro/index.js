@@ -1,1 +1,1 @@
-export { default as Cadastro } from './Cadastro.jsx';
+export { default } from './Cadastro';

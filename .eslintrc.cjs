@@ -58,8 +58,20 @@ module.exports = {
       files: ['**/index.js', '**/index.jsx'],
       rules: {
         'no-restricted-exports': 'off',
-        'import/extensions': ['error', 'ignorePackages'],
+        'import/extensions': 'off',
       },
     },
   ],
+
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
+      },
+    },
+
+    react: {
+      version: 'detect',
+    },
+  },
 };

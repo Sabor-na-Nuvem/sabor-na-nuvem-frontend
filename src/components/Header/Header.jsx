@@ -4,7 +4,7 @@ import Button from "../Button";
 import styles from "./Header.module.css";
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 
-export default function Header() {
+const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -96,3 +96,5 @@ export default function Header() {
     </header>
   );
 }
+
+export default Header;

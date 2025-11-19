@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import styles from "./ReturnLink.module.css";
 
-export default function ReturnLink({ to = "/", text = "Voltar", ...props }) {
+const ReturnLink = ({ to = "/", text = "Voltar", ...props }) => {
   // Símbolo Unicode simples (leftarrow) para o ícone
   const icon = "‹";
 
@@ -12,3 +12,5 @@ export default function ReturnLink({ to = "/", text = "Voltar", ...props }) {
     </Link>
   );
 }
+
+export default ReturnLink;

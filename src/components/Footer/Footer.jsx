@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import styles from "./Footer.module.css";
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 
-export default function Footer() {
+const Footer = () => {
   return (
     <footer className={styles.footer}>
       {/* Container Principal (Limita a largura e aplica padding) */}
@@ -66,3 +66,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+export default Footer;
