@@ -1,0 +1,150 @@
+.containerPrincipal {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.tituloProduto {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.tituloProduto h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  color: var(--text-heading);
+  margin-bottom: 10px;
+}
+
+.tituloProduto::after {
+  content: '';
+  display: block;
+  width: 100px;
+  height: 2px;
+  background-color: var(--color-primary);
+  margin: 0 auto;
+}
+
+.produtoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* LADO ESQUERDO */
+.leftBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.imagemWrapper {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 20px;
+  border: 2px solid var(--color-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.imagemPrincipal {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.controlsBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.precoBotaoInferior {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  flex-shrink: 0;
+}
+
+.addToCartButton {
+  width: 100%;
+  max-width: 250px;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+}
+
+/* LADO DIREITO */
+.rightBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.descricao {
+  font-size: 1rem;
+  color: var(--text-body);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.personalizeSeuPedido {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 15px;
+}
+
+/* --- Grupos de Personalização (ex: Troque seu queijo) --- */
+.customizationGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.backLinkWrapper {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.backLink {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: var(--color-primary-dark);
+}
+
+/* --- Desktop (Breakpoint) --- */
+
+@media (min-width: 1024px) {
+  .produtoContent {
+    flex-direction: row;
+  }
+
+  .leftBlock {
+    align-items: flex-start;
+  }
+
+  .imagemWrapper {
+    margin-bottom: 30px;
+  }
+
+  .controlsBottom {
+    max-width: none;
+    width: 100%;
+    gap: 0;
+  }
+
+  .addToCartButton {
+    max-width: none;
+    width: 100%;
+  }
+}

@@ -1,11 +1,12 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Section from '../../components/Section';
 import styles from './ListaProdutos.module.css';
 import MOCK_PRODUTOS from '../../data/produtos';
 import MOCK_CATEGORIAS from '../../data/categorias';
 
 const ListaProdutos = () => {
+  const navigate = useNavigate();
   const params = useParams();
   const categoriaId = Number(params.categoriaId);
   const categoriaNome =
@@ -17,17 +18,23 @@ const ListaProdutos = () => {
         <h2 style={{ textAlign: 'center' }}>{categoriaNome}</h2>
       </div>
 
-      {/* CATEGORIAS */}
+      {/* PRODUTOS */}
       <div className={styles.produtoList}>
         {MOCK_PRODUTOS.map(
           (produto) =>
             (produto.categoriaId === categoriaId || categoriaId === 10) && (
-              <div key={produto.id} className={styles.produtoButton}>
+              <button
+                key={produto.id}
+                className={styles.produtoButton}
+                onClick={() => navigate(`/detalhes-produto/${produto.id}`)}
+              >
                 <div className={styles.produtoNameBox}>
                   <span className={styles.produtoName}>{produto.nome}</span>
                 </div>
-                <img src={produto.imageUrl} className={styles.produtoImage} />
-              </div>
+                <div className={styles.produtoImageContainer}>
+                  <img src={produto.imagemUrl} alt={produto.nome} className={styles.produtoImage} />
+                </div>
+              </button>
             )
         )}
       </div>
