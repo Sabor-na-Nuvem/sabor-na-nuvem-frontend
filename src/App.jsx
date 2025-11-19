@@ -2,22 +2,30 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import DefaultLayout from './layouts/DefaultLayout';
+import Cardapio from './pages/Cardapio';
+import ListaProdutos from './pages/ListaProdutos/ListaProdutos';
 import Cadastro from './pages/Cadastro/Cadastro';
+import ScrollToTop from './components/ScrollToTop';
+import DefaultLayout from './layouts/DefaultLayout';
 
 /* --- O APP PRINCIPAL --- */
 function App() {
   return (
-    <Routes>
-      {/* GRUPO 1: Rotas com Header e Footer */}
-      <Route element={<DefaultLayout />}>
-        <Route path="/" element={<Home />} />
-      </Route>
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* GRUPO 1: Rotas com Header e Footer */}
+        <Route element={<DefaultLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/cardapio" element={<Cardapio />} />
+          <Route path="/lista-produtos/:categoriaId" element={<ListaProdutos />} />
+        </Route>
 
-      {/* GRUPO 2: Rotas "Soltas" (Sem Header/Footer) */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/cadastro" element={<Cadastro />} />
-    </Routes>
+        {/* GRUPO 2: Rotas "Soltas" (Sem Header/Footer) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Cadastro />} />
+      </Routes>
+    </>
   );
 }
 

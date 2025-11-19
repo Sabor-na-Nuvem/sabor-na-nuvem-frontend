@@ -3,6 +3,10 @@
   --color-primary: #c25153;
   --color-secondary: #ffcf2a;
 
+  --color-primary-dark: #a34144;
+  --bg-primary-alpha: rgba(194, 81, 83, 0.1);
+  --bg-secondary-alpha: rgba(255, 207, 42, 0.1);
+
   /* --- FUNDOS (BACKGROUNDS) --- */
   --bg-app: #f7f9fc; /* Fundo Principal da Página */
   --bg-surface: #ffffff; /* Fundo de Cards/Container (Geralmente branco puro) */
@@ -23,7 +27,7 @@
   /* --- VARIÁVEL DE FONTE --- */
   --font-family-primary: 'Poppins', sans-serif;
 
-  --section-padding: clamp(3.75rem, 8vw, 6.25rem);
+  --section-padding: clamp(2.75rem, 8vw, 5.25rem);
   --container-gap: clamp(3rem, 6vw, 4rem);
   --font-base: clamp(1rem, 3vw, 2rem);
   --max-width: 1280px;
@@ -66,6 +70,13 @@ body {
   flex-direction: column;
   align-items: center;
   gap: var(--container-gap);
+}
+
+.pageTitleContainer {
+  width: 100%;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-surface-subtle);
 }
 
 h1 {

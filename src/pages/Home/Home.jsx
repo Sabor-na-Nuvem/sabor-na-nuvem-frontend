@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Section from '../../components/Section';
 import Button from '../../components/Button';
 import imagemPrincipal from '../../assets/placeholder-big.png';
@@ -9,6 +10,7 @@ import styles from './Home.module.css';
 const DESKTOP_BREAKPOINT = '(min-width: 1024px)';
 
 const Home = () => {
+  const navigate = useNavigate();
   const isDesktop = useMediaQuery(DESKTOP_BREAKPOINT);
 
   return (
@@ -38,7 +40,11 @@ const Home = () => {
         {/* CARDAPIO */}
         <div className={styles.cardapioContainer}>
           <h2>Confira nosso...</h2>
-          <Button variant="outline-yellow" className={styles.cardapioButton}>
+          <Button
+            variant="outline-yellow"
+            className={styles.cardapioButton}
+            onClick={() => navigate('/cardapio')}
+          >
             Cardápio
           </Button>
         </div>
