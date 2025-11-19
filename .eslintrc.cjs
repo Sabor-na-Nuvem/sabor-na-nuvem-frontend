@@ -5,9 +5,9 @@ module.exports = {
     node: true,
   },
 
-  extends: ['airbnb-base', 'plugin:prettier/recommended'],
+  extends: ['airbnb-base', 'plugin:react/recommended', 'plugin:prettier/recommended'],
 
-  plugins: ['react-hooks', 'import'],
+  plugins: ['react', 'react-hooks', 'import'],
 
   parserOptions: {
     ecmaVersion: 'latest',
@@ -31,8 +31,9 @@ module.exports = {
       'error',
       'ignorePackages',
       {
-        js: 'always',
-        jsx: 'always',
+        js: 'never',
+        jsx: 'never',
+        json: 'always',
       },
     ],
 

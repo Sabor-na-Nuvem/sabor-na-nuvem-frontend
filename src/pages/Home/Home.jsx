@@ -1,5 +1,6 @@
-import Section from "../../components/Section";
-import Button from "../../components/Button"
+import React from 'react';
+import Section from '../../components/Section';
+import Button from '../../components/Button';
 
 const Home = () => (
   <Section id="home">
@@ -7,10 +8,10 @@ const Home = () => (
     <p className="text-center">Como você quer pedir hoje?</p>
     <div
       style={{
-        display: "flex",
-        gap: "10px",
-        justifyContent: "center",
-        marginTop: "20px",
+        display: 'flex',
+        gap: '10px',
+        justifyContent: 'center',
+        marginTop: '20px',
       }}
     >
       <Button variant="primary">Delivery</Button>

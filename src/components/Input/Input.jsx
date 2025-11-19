@@ -1,9 +1,9 @@
-import styles from "./Input.module.css";
+import React from 'react';
+import PropTypes from 'prop-types';
+import styles from './Input.module.css';
 
-const Input = ({ label, error, type = "text", ...props }) => {
-  const inputClass = error
-    ? `${styles.inputField} ${styles.error}`
-    : styles.inputField;
+const Input = ({ label, error, type = 'text', ...props }) => {
+  const inputClass = error ? `${styles.inputField} ${styles.error}` : styles.inputField;
 
   return (
     <div className={styles.inputGroup}>
@@ -19,11 +19,21 @@ const Input = ({ label, error, type = "text", ...props }) => {
         {...props}
       />
 
-      <span className={`${styles.errorMessage} ${error ? styles.visible : ""}`}>
-        {error || " "}
+      <span className={`${styles.errorMessage} ${error ? styles.visible : ''}`}>
+        {error || ' '}
       </span>
     </div>
   );
+};
+
+Input.propTypes = {
+  label: PropTypes.string,
+  error: PropTypes.string,
+  type: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  onChange: PropTypes.func.isRequired,
+  name: PropTypes.string.isRequired,
+  id: PropTypes.string,
 };
 
 export default Input;

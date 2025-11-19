@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
-import styles from "./Footer.module.css";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import styles from './Footer.module.css';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 
 const Footer = () => {
@@ -10,7 +11,8 @@ const Footer = () => {
         {/* SEÇÃO LOGO E SLOGAN */}
         <div className={styles.about}>
           <Link to="/" className={styles.logo}>
-            <img src={logoImg} alt="Sabor na Nuvem Logo" className={styles.logoImage} /> Sabor na Nuvem
+            <img src={logoImg} alt="Sabor na Nuvem Logo" className={styles.logoImage} />
+            Sabor na Nuvem
           </Link>
           <p className={styles.slogan}>Provendo sabores inesquecíveis</p>
           <p className={styles.copyrightMobile}>Copyright &copy; 2025</p>
@@ -47,11 +49,7 @@ const Footer = () => {
               <a href="#" className={styles.socialIcon} aria-label="LinkedIn">
                 🔗
               </a>
-              <a
-                href="#"
-                className={styles.socialIcon}
-                aria-label="X (Twitter)"
-              >
+              <a href="#" className={styles.socialIcon} aria-label="X (Twitter)">
                 ✖️
               </a>
             </div>
@@ -65,6 +63,6 @@ const Footer = () => {
       </div>
     </footer>
   );
-}
+};
 
 export default Footer;

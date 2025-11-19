@@ -1,12 +1,14 @@
-import styles from "./Button.module.css";
+import React from 'react';
+import PropTypes from 'prop-types';
+import styles from './Button.module.css';
 
 const Button = ({
-  type = "text",
+  type = 'text',
   children,
-  variant = "primary",
+  variant = 'primary',
   onClick,
   icon,
-  className = "",
+  className = '',
 }) => {
   // Classe base + a variante + classes extras (se houver)
   const classNames = `${styles.btn} ${styles[variant]} ${className}`;
@@ -17,6 +19,15 @@ const Button = ({
       {children}
     </button>
   );
+};
+
+Button.propTypes = {
+  type: PropTypes.string,
+  children: PropTypes.node,
+  variant: PropTypes.string,
+  onClick: PropTypes.func.isRequired,
+  icon: PropTypes.string,
+  className: PropTypes.string,
 };
 
 export default Button;

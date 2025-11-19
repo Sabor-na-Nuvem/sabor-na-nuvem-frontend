@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import Button from "../Button";
-import styles from "./Header.module.css";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Button from '../Button';
+import styles from './Header.module.css';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 
 const Header = () => {
@@ -19,11 +19,7 @@ const Header = () => {
         {/* NAVEGAÇÃO DESKTOP (Mostrada apenas em telas grandes) */}
         <div className={styles.desktopNav}>
           {/* Botão de Carrinho (Apenas um placeholder de ícone) */}
-          <Button
-            variant="outline-yellow"
-            icon="🛒"
-            className={styles.navButton}
-          />
+          <Button variant="outline-yellow" icon="🛒" className={styles.navButton} />
 
           <Link to="/login">
             <Button variant="primary" className={styles.navButton}>
@@ -39,40 +35,25 @@ const Header = () => {
           aria-expanded={isMenuOpen}
           aria-label="Toggle menu"
         >
-          {isMenuOpen ? "✕" : "☰"}
+          {isMenuOpen ? '✕' : '☰'}
         </button>
       </div>
 
       {/* MENU LATERAL MOBILE (Aparece ao abrir) */}
-      <nav className={`${styles.mobileNav} ${isMenuOpen ? styles.open : ""}`}>
-        <Link
-          to="/"
-          className={styles.navLink}
-          onClick={() => setIsMenuOpen(false)}
-        >
+      <nav className={`${styles.mobileNav} ${isMenuOpen ? styles.open : ''}`}>
+        <Link to="/" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
           Home
         </Link>
-        <Link
-          to="/cardapio"
-          className={styles.navLink}
-          onClick={() => setIsMenuOpen(false)}
-        >
+        <Link to="/cardapio" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
           Cardápio
         </Link>
-        <Link
-          to="/quem-somos"
-          className={styles.navLink}
-          onClick={() => setIsMenuOpen(false)}
-        >
+        <Link to="/quem-somos" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
           Quem Somos
         </Link>
 
         {/* Botão de Entrar no final do menu mobile */}
         <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-          <Button
-            variant="primary"
-            style={{ width: "100%", marginTop: "1rem" }}
-          >
+          <Button variant="primary" style={{ width: '100%', marginTop: '1rem' }}>
             Entrar
           </Button>
         </Link>
@@ -82,12 +63,12 @@ const Header = () => {
       {isMenuOpen && (
         <div
           style={{
-            position: "fixed",
+            position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            background: "rgba(0,0,0,0.5)",
+            background: 'rgba(0,0,0,0.5)',
             zIndex: 98,
           }}
           onClick={() => setIsMenuOpen(false)}
@@ -95,6 +76,6 @@ const Header = () => {
       )}
     </header>
   );
-}
+};
 
 export default Header;

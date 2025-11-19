@@ -1,9 +1,11 @@
-import { Link } from "react-router-dom";
-import styles from "./ReturnLink.module.css";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import styles from './ReturnLink.module.css';
 
-const ReturnLink = ({ to = "/", text = "Voltar", ...props }) => {
+const ReturnLink = ({ to = '/', text = 'Voltar', ...props }) => {
   // Símbolo Unicode simples (leftarrow) para o ícone
-  const icon = "‹";
+  const icon = '‹';
 
   return (
     <Link to={to} className={styles.returnLink} {...props}>
@@ -11,6 +13,11 @@ const ReturnLink = ({ to = "/", text = "Voltar", ...props }) => {
       <span className={styles.text}>{text}</span>
     </Link>
   );
-}
+};
+
+ReturnLink.propTypes = {
+  to: PropTypes.string,
+  text: PropTypes.string,
+};
 
 export default ReturnLink;

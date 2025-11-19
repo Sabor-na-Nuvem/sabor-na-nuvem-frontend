@@ -1,8 +1,9 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home/";
-import Login from "./pages/Login/";
-import DefaultLayout from "./layouts/DefaultLayout";
-import Cadastro from "./pages/Cadastro/Cadastro";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import DefaultLayout from './layouts/DefaultLayout';
+import Cadastro from './pages/Cadastro/Cadastro';
 
 /* --- O APP PRINCIPAL --- */
 function App() {

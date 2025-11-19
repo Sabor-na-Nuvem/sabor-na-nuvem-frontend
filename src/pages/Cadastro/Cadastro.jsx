@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 import googleLogo from '../../assets/google-logo.png';
@@ -84,8 +84,8 @@ const Cadastro = () => {
 
     if (isSubmitted) {
       const currentValues = {
-        email: email,
-        nome: nome,
+        email,
+        nome,
         senha: name === 'senha' ? value : senha,
         confirmarSenha: name === 'confirmarSenha' ? value : confirmarSenha,
       };
@@ -106,10 +106,10 @@ const Cadastro = () => {
   const handleBlur = (e) => {
     if (isSubmitted) {
       const formValues = {
-        email: email,
-        nome: nome,
-        senha: senha,
-        confirmarSenha: confirmarSenha,
+        email,
+        nome,
+        senha,
+        confirmarSenha,
       };
 
       validarCampo(e.target.name, e.target.value, formValues);
@@ -126,10 +126,10 @@ const Cadastro = () => {
     setIsSubmitted(true);
 
     const formValues = {
-      email: email,
-      nome: nome,
-      senha: senha,
-      confirmarSenha: confirmarSenha,
+      email,
+      nome,
+      senha,
+      confirmarSenha,
     };
 
     const emailValidation = validarCampo('email', email, formValues);

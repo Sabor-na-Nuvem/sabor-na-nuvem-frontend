@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 import googleLogo from '../../assets/google-logo.png';
