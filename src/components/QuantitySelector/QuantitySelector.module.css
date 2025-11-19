@@ -1,0 +1,51 @@
+.quantitySelector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border: 2px solid var(--color-secondary);
+  border-radius: 8px;
+
+  padding: 5px 8px;
+  width: 100px;
+  margin: 0 auto;
+  flex-shrink: 0;
+  flex-grow: 0;
+
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 5px;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-heading);
+  transition: opacity 0.2s;
+}
+
+.button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.button:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.quantity {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  padding: 0 8px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.minus,
+.plus {
+  display: block;
+  font-weight: 500;
+}

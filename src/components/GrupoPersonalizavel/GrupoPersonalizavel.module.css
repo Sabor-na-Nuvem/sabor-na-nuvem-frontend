@@ -1,0 +1,75 @@
+.grupoPersonalizavel {
+  border: 1px solid var(--color-surface-subtle);
+  border-radius: 8px;
+  background-color: var(--bg-surface);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 15px;
+  background-color: var(--color-surface);
+  border: none;
+  border-bottom: 1px solid var(--color-surface-subtle);
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-heading);
+  transition: background-color 0.2s;
+}
+
+.header:hover {
+  background-color: var(--color-surface-subtle);
+}
+
+.icon {
+  transition: transform 0.3s ease-in-out;
+}
+
+.icon.open {
+  transform: rotate(180deg);
+}
+
+.optionsWrapper {
+  transition:
+    max-height 0.4s ease-in-out,
+    padding 0.4s ease-in-out;
+  max-height: 0;
+  overflow: hidden;
+  background-color: var(--bg-surface-alt);
+  padding: 0 15px;
+}
+
+.optionsWrapper.open {
+  max-height: 500px;
+  padding: 15px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.optionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  color: var(--text-body);
+}
+
+.optionItem input[type='radio'],
+.optionItem input[type='checkbox'] {
+  accent-color: var(--color-primary);
+  transform: scale(1.2);
+}
+
+.optionPrice {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--color-primary);
+}
