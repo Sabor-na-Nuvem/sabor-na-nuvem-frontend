@@ -1,0 +1,123 @@
+.topContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--container-gap);
+}
+
+.innerLeftTopContainer {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  gap: var(--container-gap);
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.cardapioContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid var(--color-surface-subtle);
+}
+
+.cardapioButton {
+  min-width: 280px;
+  width: 30%;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+}
+
+.imagemPrincipal {
+  width: 100%;
+  max-width: 100%;
+}
+
+.bottomContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--container-gap);
+  max-width: var(--max-width); 
+  margin: 0 auto;
+  width: 100%;
+}
+
+.destaquesContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--container-gap);
+  width: 100%;
+}
+
+.destaquesCard {
+  width: 90%;
+  max-width: 350px;
+  background-color: var(--color-surface-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  padding: 2rem;
+  padding-bottom: 0px;
+  border: 2px outset var(--color-primary);
+  border-radius: 20px;
+}
+
+.destaquesText {
+  text-align: center;
+}
+
+/* --- Desktop (Breakpoint) --- */
+
+@media (min-width: 1024px) {
+  .topContainer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    max-width: var(--max-width);
+    padding: 2rem 0;
+  }
+
+  .imageBlock {
+    flex-basis: 40%;
+    max-width: 40%;
+  }
+
+  .contentBlock {
+    flex-basis: 60%;
+    max-width: 60%;
+    padding-right: 30px;
+    text-align: left;
+  }
+
+  .buttonContainer {
+    justify-content: flex-start;
+    gap: 20px;
+  }
+
+  .destaquesContainer {
+    flex-direction: row; 
+    align-items: stretch; 
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .destaquesCard {
+    width: calc((100% - 40px) / 3);
+    flex: none; 
+    min-width: 0; 
+    max-width: none;
+    margin: 0;
+  }
+}

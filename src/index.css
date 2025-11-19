@@ -36,8 +36,14 @@
   padding: 0;
 }
 
+html,
 body {
-  font-family: var(--font-family-primary); 
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-primary);
   font-weight: 500;
   background-color: var(--bg-app);
   color: var(--text-body);
@@ -63,7 +69,7 @@ body {
 }
 
 h1 {
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: clamp(1.8rem, 5vw, 3rem);
   line-height: 1.1;
   text-align: center;
 }
