@@ -1,0 +1,200 @@
+.infoContainer {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--container-gap);
+}
+
+.contentBlock {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 2px 4px var(--text-body);
+  border-radius: 16px;
+}
+
+.topContent {
+  width: 100%;
+  display: flex;
+  text-align: center;
+  flex-direction: column;
+  padding: 1rem;
+  border: 2px solid var(--text-heading);
+  border-radius: 16px 16px 0 0;
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Corpo do Cartão */
+.cardBody {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Wrapper da Linha Editável */
+.editableInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+/* --- NOVO: INDICADOR VISUAL DE EDIÇÃO --- */
+.activeWrapper {
+  border-bottom: 2px solid var(--color-primary) !important;
+  background-color: #f9fafb;
+  border-radius: 4px 4px 0 0;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Ajuste de margens internas para funcionar com o Input original */
+.editableInputWrapper div {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.editableInputWrapper span {
+  position: absolute !important;
+  bottom: -24px;
+  left: 0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  width: 100%;
+  height: auto !important;
+  overflow: visible !important;
+  z-index: 5;
+}
+
+/* Estilo do INPUT */
+.editableInputWrapper input {
+  border: none !important;
+  background: transparent !important;
+  padding-left: 0 !important;
+  padding-bottom: 4px !important;
+  margin-bottom: 0 !important;
+  font-weight: 500;
+  color: var(--text-heading);
+  width: 100%;
+  height: auto !important;
+  box-shadow: none !important;
+  transition: opacity 0.2s;
+}
+
+/* ESTADO: TRAVADO (Apenas leitura) */
+.editableInputWrapper input:disabled {
+  color: var(--text-heading);
+  cursor: text;
+  opacity: 1;
+  -webkit-text-fill-color: var(--text-heading);
+}
+
+/* ESTADO: EDITÁVEL (Foco visual) */
+.editableInputWrapper input:not(:disabled) {
+  color: #000;
+}
+
+/* Container dos Botões de Ação (Lápis ou Check/X) */
+.actionsContainer {
+  position: absolute;
+  right: 0;
+  bottom: 2px;
+  z-index: 10;
+  display: flex;
+  gap: 5px;
+}
+
+.editIconBtn,
+.actionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.editIconBtn {
+  color: #888;
+}
+.editIconBtn:hover {
+  color: var(--color-primary);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.cancelBtn {
+  color: #999;
+}
+.cancelBtn:hover {
+  color: var(--status-error);
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.saveBtn {
+  color: var(--status-success);
+}
+.saveBtn:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+  transform: scale(1.1);
+}
+
+/* Animação de Loading (Spin) */
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.botaoEnderecoContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.botaoEndereco {
+  width: 300px;
+}
+
+.buttonBlock {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.botaoExcluir {
+  background-color: var(--status-error);
+}
+
+.botaoExcluir:hover {
+  background-color: var(--status-error);
+}

@@ -1,0 +1,51 @@
+.topContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--container-gap);
+}
+
+.innerLeftTopContainer {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-inline: auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--container-gap);
+}
+
+.imagemPrincipal {
+  width: 100%;
+  max-width: 100%;
+}
+
+.opcoesPerfil {
+  width: 100%;
+  max-height: 3.2rem;
+  font-size: 1.1rem;
+  padding-bottom: 0.5rem;
+  justify-content: space-around;
+  gap: 15%;
+  align-items: center;
+}
+
+/* --- Desktop (Breakpoint) --- */
+
+@media (min-width: 1024px) {
+  .topContainer {
+    flex-direction: row;
+  }
+
+  .contentBlock {
+    flex-basis: 60%;
+    max-width: 60%;
+    padding-right: 30px;
+    text-align: left;
+  }
+
+  .imageBlock {
+    flex-basis: 40%;
+    max-width: 40%;
+  }
+}
