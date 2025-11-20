@@ -28,15 +28,22 @@ const Header = () => {
         <div className={styles.desktopNav}>
           {/* Botão de Carrinho (Se não estiver logado ou for CLIENTE) */}
           {(!user || user.cargo === 'CLIENTE') && (
-            <Link to="/carrinho">
-              <Button
-                variant="outline-yellow"
-                icon={<TiShoppingCart size={20} />}
-                className={styles.navButton}
-              >
-                {valorTotalFormatado}
-              </Button>
-            </Link>
+            <>
+              <Link to="/carrinho">
+                <Button
+                  variant="no-outline"
+                  icon={<TiShoppingCart size={20} />}
+                  className={styles.navButton}
+                >
+                  {valorTotalFormatado}
+                </Button>
+              </Link>
+              <Link to="/cardapio">
+                <Button variant="outline-red" className={styles.navButton}>
+                  Cardápio
+                </Button>
+              </Link>
+            </>
           )}
 
           {user ? (
@@ -44,32 +51,36 @@ const Header = () => {
               {/* Se for ADMIN */}
               {user.cargo === 'ADMIN' && (
                 <Link to="/admin">
-                  <Button variant="primary">Painel Admin</Button>
+                  <Button variant="outline-red" className={styles.navButton}>
+                    Painel Admin
+                  </Button>
                 </Link>
               )}
 
               {/* Se for FUNCIONARIO */}
               {user.cargo === 'FUNCIONARIO' && (
                 <Link to="/portal">
-                  <Button variant="primary">Área da Loja</Button>
+                  <Button variant="outline-red" className={styles.navButton}>
+                    Área da Loja
+                  </Button>
                 </Link>
               )}
 
               {/* Se for CLIENTE */}
               {user.cargo === 'CLIENTE' && (
-                <>
-                  <Link to="/cardapio">
-                    <Button variant="primary">Cardápio</Button>
-                  </Link>
-                  <Link to="/minha-conta">
-                    <Button variant="outline-red" icon={<FaRegUserCircle />}>
-                      Meu Perfil
-                    </Button>
-                  </Link>
-                </>
+                <Link to="/minha-conta">
+                  <Button variant="primary" icon={<FaRegUserCircle />} className={styles.navButton}>
+                    Meu Perfil
+                  </Button>
+                </Link>
               )}
 
-              <Button variant="ouline-yellow" onClick={logout} icon={<MdLogout />} />
+              <Button
+                variant="no-outline"
+                onClick={logout}
+                icon={<MdLogout size={14} className={styles.navButton} />}
+                className={`${styles.navButton} ${styles.logout}`}
+              />
             </>
           ) : (
             <Link to="/login">

@@ -4,21 +4,26 @@
   font-weight: 600;
   cursor: pointer;
   border: none;
-  
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  
-  line-height: 1; 
+
+  line-height: 1;
   text-decoration: none;
 
-  transition: transform 0.2s ease-out, background-color 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s ease-out,
+    background-color 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s,
+    color 0.2s;
 }
 
 .btn:active {
-  transform: scale(0.95); 
-  box-shadow: none; 
+  transform: scale(0.95);
+  box-shadow: none;
 }
 
 .full-width {
@@ -33,21 +38,21 @@
 
 .primary:hover {
   background-color: var(--color-primary-dark);
-  transform: translateY(-2px); 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Variante OUTLINE-RED (Borda Principal) */
 .outline-red {
   background-color: transparent;
   border: 2px solid var(--color-primary);
-  color: var(--text-body); 
+  color: var(--text-body);
 }
 
 .outline-red:hover {
-  background-color: var(--bg-primary-alpha); 
+  background-color: var(--bg-primary-alpha);
   transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); 
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Variante OUTLINE-YELLOW (Borda Secundária) */
@@ -60,10 +65,25 @@
 .outline-yellow:hover {
   background-color: var(--bg-secondary-alpha);
   transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); 
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Variante ICON (Só um ícone) */
+/* Variante NO-OUTLINE (Sem Borda) */
+.no-outline {
+  background-color: var(--color-surface-subtle);
+  border: 2px solid transparent;
+  color: var(--text-body);
+}
+
+.no-outline:hover {
+  color: var(--text-heading);
+  border-right-color: var(--color-secondary);
+  border-bottom-color: var(--color-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Icone */
 .icon {
   line-height: 1;
 }

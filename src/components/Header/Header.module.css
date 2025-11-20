@@ -78,7 +78,18 @@
 }
 
 .navButton {
-  max-height: 2.5rem;
+  max-height: 2.4rem;
+}
+
+.navButton.logout {
+  border-bottom-color: var(--color-primary);
+  border-right-color: transparent;
+}
+
+.navButton.logout:hover {
+  background-color: var(--color-primary);
+  color: var(--text-on-primary);
+  transform: translateX(2px);
 }
 
 .logoImage {
