@@ -4,94 +4,185 @@ import PropTypes from 'prop-types';
 export const AuthContext = createContext();
 
 const STORAGE_KEY = '@SaborNaNuvem:user';
+const TOKEN_KEY = '@SaborNaNuvem:token';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Recuperação de sessão ao carregar a página
   useEffect(() => {
-    const recoveredUser = localStorage.getItem(STORAGE_KEY);
+    const recoverUser = async () => {
+      const storedUser = localStorage.getItem(STORAGE_KEY);
+      const storedToken = localStorage.getItem(TOKEN_KEY);
 
-    if (recoveredUser) {
-      setUser(JSON.parse(recoveredUser));
-    }
+      if (storedUser && storedToken) {
+        setUser(JSON.parse(storedUser));
+        // Aqui futuramente você pode validar se o token ainda é válido
+        // api.defaults.headers.Authorization = `Bearer ${storedToken}`;
+      }
+      setLoading(false);
+    };
 
-    setLoading(false);
+    recoverUser();
   }, []);
 
-  // Função de Login (SIMULAÇÃO - TODO: Substituir por API Real depois)
   // eslint-disable-next-line no-unused-vars
   const login = async (email, password) => {
-    /* TODO: 
-      const response = await api.post('/login', { email, password });
-      const { token, user } = response.data;
-    */
+    setLoading(true);
 
-    // --- INÍCIO DA SIMULAÇÃO ---
-    // Simulando um delay de rede de 1 segundo
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        let usuarioSimulado = null;
+    try {
+      // --- PASSO 1: AUTENTICAÇÃO (POST /login) ---
+      // const response = await api.post('/login', { email, password });
+      // const { token, userId } = response.data;
 
-        // Lógica para definir papéis baseados no email digitado
-        if (email.includes('admin')) {
-          usuarioSimulado = {
-            id: 1,
-            nome: 'Admin Master',
-            email,
-            cargo: 'ADMIN', // Acesso total
-          };
-        } else if (email.includes('func')) {
-          usuarioSimulado = {
-            id: 2,
-            nome: 'João Cozinheiro',
-            email,
-            cargo: 'FUNCIONARIO',
-            lojaId: 10, // Apenas desta loja
-          };
-        } else if (email.includes('cliente')) {
-          usuarioSimulado = {
-            id: 3,
-            nome: 'Cliente Faminto',
-            email,
-            cargo: 'CLIENTE',
-          };
-        } else {
-          // Se não for nenhum desses, rejeita o login (senha errada, etc)
-          reject(new Error('Usuário ou senha inválidos'));
-          return;
-        }
+      // SIMULAÇÃO DA RESPOSTA DO LOGIN
+      const mockLoginResponse = await new Promise((resolve) => {
+        setTimeout(() => {
+          let cargo = 'CLIENTE';
+          if (email.includes('admin')) cargo = 'ADMIN';
+          if (email.includes('func')) cargo = 'FUNCIONARIO';
 
-        setUser(usuarioSimulado);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(usuarioSimulado));
-        resolve(usuarioSimulado);
-      }, 1000);
-    });
-    // --- FIM DA SIMULAÇÃO ---
+          resolve({
+            token: 'token-falso-jwt-123456',
+            userId: 'uuid-usuario-123',
+            cargo,
+          });
+        }, 500); // Pequeno delay do login
+      });
+
+      const { token, cargo } = mockLoginResponse;
+
+      localStorage.setItem(TOKEN_KEY, token);
+      // api.defaults.headers.Authorization = `Bearer ${token}`;
+
+      // --- PASSO 2, 3 e 4: BUSCAR DADOS COMPLEMENTARES EM PARALELO ---
+      // Atualmente simulando as 3 chamadas distintas ao backend
+
+      /* No futuro será:
+        const [userData, phonesData, addressData] = await Promise.all([
+           api.get(`/usuarios/me`),
+           api.get(`/usuarios/me/telefones`),
+           api.get(`/usuarios/me/endereco`)
+        ]);
+      */
+
+      const [userData, telefonesData, enderecoData] = await Promise.all([
+        // Chamada 1: Dados do Usuário (Tabela Usuario)
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve({
+                id: 'uuid-usuario-123',
+                nome: 'João Matheus',
+                email,
+                cargo,
+                // Outros campos do model Usuario...
+              }),
+            300
+          );
+        }),
+
+        // Chamada 2: Telefones (Tabela Telefone)
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve([
+                { id: 1, ddd: '61', numero: '998765432', principal: true },
+                { id: 2, ddd: '61', numero: '33330000', principal: false }, // Exemplo de reserva
+              ]),
+            300
+          );
+        }),
+
+        // Chamada 3: Endereço (Tabela Endereco)
+        new Promise((resolve) => {
+          // Simulando que admin não tem endereço cadastrado, por exemplo
+          if (cargo === 'ADMIN') {
+            resolve(null);
+            return;
+          }
+
+          setTimeout(
+            () =>
+              resolve({
+                id: 10,
+                logradouro: 'Avenida das Araucárias',
+                numero: '1000',
+                complemento: 'Apto 101',
+                bairro: 'Águas Claras',
+                cidade: 'Brasília',
+                estado: 'DF',
+                cep: '71900-000',
+                pontoReferencia: 'Próximo ao Metrô',
+              }),
+            300
+          );
+        }),
+      ]);
+
+      // --- PASSO 5: UNIFICAÇÃO DOS DADOS ---
+      // Monta um objeto único para facilitar o uso
+      const fullUser = {
+        ...userData,
+        telefones: telefonesData || [],
+        endereco: enderecoData || null,
+      };
+
+      setUser(fullUser);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fullUser));
+
+      return fullUser;
+    } catch (error) {
+      console.error('Erro no login:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Função de Logout
+  const updateUser = async (updates) => {
+    try {
+      // Simula chamada API (PUT /usuarios/me)
+      await new Promise((resolve) => {
+        setTimeout(resolve, 600);
+      });
+
+      setUser((prevUser) => {
+        const newUser = { ...prevUser, ...updates };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+        return newUser;
+      });
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar:', error);
+      throw error;
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    // api.defaults.headers.Authorization = undefined;
   };
 
-  // Verifica se o usuário tem uma das cargos permitidas
-  const temCargo = (cargosPermitidos) => {
+  const temCargo = (cargosPermitidas) => {
     if (!user) return false;
-    if (Array.isArray(cargosPermitidos)) {
-      return cargosPermitidos.includes(user.cargo);
+    if (Array.isArray(cargosPermitidas)) {
+      return cargosPermitidas.includes(user.cargo);
     }
-    return user.cargo === cargosPermitidos;
+    return user.cargo === cargosPermitidas;
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isAuthenticated: !!user, // Booleano simples para saber se está logado
+        isAuthenticated: !!user,
         user,
         loading,
         login,
+        updateUser,
         logout,
         temCargo,
       }}
@@ -105,7 +196,6 @@ AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-// Hook personalizado para não precisar importar useContext e AuthContext toda vez
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
