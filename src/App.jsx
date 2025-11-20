@@ -5,13 +5,13 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Cardapio from './pages/Cardapio';
 import Cadastro from './pages/Cadastro/Cadastro';
+import Carrinho from './pages/Carrinho/Carrinho';
 import ListaProdutos from './pages/ListaProdutos/ListaProdutos';
 import DetalhesProduto from './pages/DetalhesProduto/DetalhesProduto';
 
 import ScrollToTop from './components/ScrollToTop';
 import DefaultLayout from './layouts/DefaultLayout';
 
-/* --- O APP PRINCIPAL --- */
 function App() {
   return (
     <>
@@ -21,6 +21,7 @@ function App() {
         <Route element={<DefaultLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/cardapio" element={<Cardapio />} />
+          <Route path="/carrinho" element={<Carrinho />} />
           <Route path="/lista-produtos/:categoriaId" element={<ListaProdutos />} />
           <Route path="/detalhes-produto/:produtoId" element={<DetalhesProduto />} />
         </Route>

@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { TiShoppingCart } from 'react-icons/ti';
 import Button from '../Button';
 import styles from './Header.module.css';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
+import { useCarrinho } from '../../contexts/CarrinhoContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const { valorTotalFormatado } = useCarrinho();
 
   return (
     <header className={styles.header}>
@@ -19,7 +23,15 @@ const Header = () => {
         {/* NAVEGAÇÃO DESKTOP (Mostrada apenas em telas grandes) */}
         <div className={styles.desktopNav}>
           {/* Botão de Carrinho (Apenas um placeholder de ícone) */}
-          <Button variant="outline-yellow" icon="🛒" className={styles.navButton} />
+          <Link to="/carrinho">
+            <Button
+              variant="outline-yellow"
+              icon={<TiShoppingCart size={20} />}
+              className={styles.navButton}
+            >
+              {valorTotalFormatado}
+            </Button>
+          </Link>
 
           <Link to="/login">
             <Button variant="primary" className={styles.navButton}>

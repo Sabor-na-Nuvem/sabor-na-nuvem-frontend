@@ -2,15 +2,9 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import styles from './GrupoPersonalizavel.module.css';
 
-const GrupoPersonalizavel = ({ grupo, onSelectionChange }) => {
+const GrupoPersonalizavel = ({ grupo, onSelectionChange, selectedValues }) => {
   const [isOpen, setIsOpen] = useState(false);
-  // Assume que para seleção mínima = 1 e máxima = 1, é radio (single-select)
   const isSelecaoUnica = grupo.selecaoMinima === 1 && grupo.selecaoMaxima === 1;
-  const [opcoesSelecionadas, setOpcoesSelecionadas] = useState(
-    isSelecaoUnica && grupo.modificadores.length > 0
-      ? grupo.modificadores.find((m) => m.isOpcaoPadrao)?.id || null
-      : []
-  );
 
   const handleToggle = () => setIsOpen(!isOpen);
 
@@ -19,32 +13,28 @@ const GrupoPersonalizavel = ({ grupo, onSelectionChange }) => {
     if (isSelecaoUnica) {
       novaSelecao = isChecked ? modificadorId : null;
     } else {
-      // Multi-select
-      // eslint-disable-next-line no-lonely-if
+      const currentSelection = selectedValues || [];
       if (isChecked) {
-        novaSelecao = [...opcoesSelecionadas, modificadorId];
+        novaSelecao = [...currentSelection, modificadorId];
         if (novaSelecao.length > grupo.selecaoMaxima) {
           novaSelecao.shift();
         }
       } else {
-        novaSelecao = opcoesSelecionadas.filter((id) => id !== modificadorId);
+        novaSelecao = currentSelection.filter((id) => id !== modificadorId);
       }
     }
-    setOpcoesSelecionadas(novaSelecao);
     if (onSelectionChange) onSelectionChange(grupo.id, novaSelecao);
   };
 
   return (
     <div className={styles.grupoPersonalizavel}>
-      <button className={styles.header} onClick={handleToggle}>
+      <button type="button" className={styles.header} onClick={handleToggle}>
         <span>{grupo.nome}</span>
         <span className={`${styles.icon} ${isOpen ? styles.open : ''}`}>&#9660;</span>{' '}
-        {/* Seta para expandir */}
       </button>
 
       <div className={`${styles.optionsWrapper} ${isOpen ? styles.open : ''}`}>
         <div className={styles.options}>
-          {/* O conteúdo real das opções */}
           {grupo.modificadores.map((modificador) => (
             <label key={modificador.id} className={styles.optionItem}>
               <input
@@ -53,8 +43,8 @@ const GrupoPersonalizavel = ({ grupo, onSelectionChange }) => {
                 value={modificador.id}
                 checked={
                   isSelecaoUnica
-                    ? opcoesSelecionadas === modificador.id
-                    : opcoesSelecionadas.includes(modificador.id)
+                    ? selectedValues === modificador.id
+                    : Array.isArray(selectedValues) && selectedValues.includes(modificador.id)
                 }
                 onChange={(e) => handleOptionChange(modificador.id, e.target.checked)}
               />
@@ -74,7 +64,6 @@ const GrupoPersonalizavel = ({ grupo, onSelectionChange }) => {
 
 // --- DEFINIÇÃO DE TIPOS ANINHADOS ---
 
-// 1. Definição do formato do Modificador (opção individual)
 const ModificadorShape = PropTypes.shape({
   id: PropTypes.number.isRequired,
   nome: PropTypes.string.isRequired,
@@ -83,7 +72,6 @@ const ModificadorShape = PropTypes.shape({
   precoAdicional: PropTypes.number,
 });
 
-// 2. Definição do formato do Grupo Personalizavel
 const PersonalizavelShape = PropTypes.shape({
   id: PropTypes.number.isRequired,
   nome: PropTypes.string.isRequired,
@@ -92,11 +80,18 @@ const PersonalizavelShape = PropTypes.shape({
   modificadores: PropTypes.arrayOf(ModificadorShape).isRequired,
 });
 
-// --- DEFINIÇÃO DO COMPONENTE PRINCIPAL ---
-
 GrupoPersonalizavel.propTypes = {
   grupo: PersonalizavelShape.isRequired,
-  onSelectionChange: PropTypes.func,
+  onSelectionChange: PropTypes.func.isRequired,
+  selectedValues: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.arrayOf(PropTypes.number),
+    PropTypes.oneOf([null]),
+  ]),
+};
+
+GrupoPersonalizavel.defaultProps = {
+  selectedValues: null,
 };
 
 export default GrupoPersonalizavel;
