@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TiShoppingCart } from 'react-icons/ti';
+import { FaRegUserCircle } from 'react-icons/fa';
+import { MdLogout } from 'react-icons/md';
 import Button from '../Button';
 import styles from './Header.module.css';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 import { useCarrinho } from '../../contexts/CarrinhoContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Header = () => {
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { valorTotalFormatado } = useCarrinho();
@@ -22,22 +26,58 @@ const Header = () => {
 
         {/* NAVEGAÇÃO DESKTOP (Mostrada apenas em telas grandes) */}
         <div className={styles.desktopNav}>
-          {/* Botão de Carrinho (Apenas um placeholder de ícone) */}
-          <Link to="/carrinho">
-            <Button
-              variant="outline-yellow"
-              icon={<TiShoppingCart size={20} />}
-              className={styles.navButton}
-            >
-              {valorTotalFormatado}
-            </Button>
-          </Link>
+          {/* Botão de Carrinho (Se não estiver logado ou for CLIENTE) */}
+          {(!user || user.cargo === 'CLIENTE') && (
+            <Link to="/carrinho">
+              <Button
+                variant="outline-yellow"
+                icon={<TiShoppingCart size={20} />}
+                className={styles.navButton}
+              >
+                {valorTotalFormatado}
+              </Button>
+            </Link>
+          )}
 
-          <Link to="/login">
-            <Button variant="primary" className={styles.navButton}>
-              Entrar
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              {/* Se for ADMIN */}
+              {user.cargo === 'ADMIN' && (
+                <Link to="/admin">
+                  <Button variant="primary">Painel Admin</Button>
+                </Link>
+              )}
+
+              {/* Se for FUNCIONARIO */}
+              {user.cargo === 'FUNCIONARIO' && (
+                <Link to="/portal">
+                  <Button variant="primary">Área da Loja</Button>
+                </Link>
+              )}
+
+              {/* Se for CLIENTE */}
+              {user.cargo === 'CLIENTE' && (
+                <>
+                  <Link to="/cardapio">
+                    <Button variant="primary">Cardápio</Button>
+                  </Link>
+                  <Link to="/minha-conta">
+                    <Button variant="outline-red" icon={<FaRegUserCircle />}>
+                      Meu Perfil
+                    </Button>
+                  </Link>
+                </>
+              )}
+
+              <Button variant="ouline-yellow" onClick={logout} icon={<MdLogout />} />
+            </>
+          ) : (
+            <Link to="/login">
+              <Button variant="primary" className={styles.navButton}>
+                Entrar
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* TOGGLE MOBILE (Ícone Hambúrguer) */}

@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 import googleLogo from '../../assets/google-logo.png';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import ReturnLink from '../../components/ReturnLink';
+import { useAuth } from '../../contexts/AuthContext';
 import styles from './Login.module.css';
 
 const Login = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [emailError, setEmailError] = useState(null);
@@ -65,7 +69,7 @@ const Login = () => {
   };
 
   // Submissão do Formulário
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setIsSubmitted(true);
@@ -76,8 +80,16 @@ const Login = () => {
     const hasErrors = emailValidation || senhaValidation;
 
     if (!hasErrors) {
-      console.log('Login efetuado com sucesso!');
       // TODO: conectar com a API
+      try {
+        await login(email, senha);
+
+        if (email.includes('admin')) navigate('/admin');
+        else if (email.includes('func')) navigate('/portal');
+        else navigate('/');
+      } catch (error) {
+        console.log('Falha no login.');
+      }
     }
   };
 
