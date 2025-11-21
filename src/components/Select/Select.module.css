@@ -1,0 +1,97 @@
+/* Herda estilos base do Input para manter consistência */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  position: relative; /* Necessário para posicionar a seta */
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--text-body);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.selectWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.selectField {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--color-surface-subtle);
+  padding: 0.5rem 2rem 0.5rem 0.25rem; /* Padding direito maior para não escrever em cima da seta */
+  font-size: 1rem;
+  color: var(--text-heading);
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  border-radius: 0; /* Remove bordas arredondadas padrão do iOS */
+
+  /* A Mágica: Remove a seta nativa do navegador */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  transition:
+    border-bottom-color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.selectField:focus {
+  border-bottom-color: var(--color-primary);
+}
+
+.selectField:disabled {
+  color: var(--text-body);
+  cursor: default;
+}
+
+/* --- ÍCONE DA SETA CUSTOMIZADA --- */
+.iconContainer {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Permite clicar no select através do ícone */
+  color: #888;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+/* Quando o select tem foco (está aberto/ativo), gira a seta */
+.selectField:focus + .iconContainer {
+  transform: translateY(-50%) rotate(180deg);
+  color: var(--color-primary);
+}
+
+/* Estilo de Erro */
+.selectField.error {
+  border-bottom-color: var(--status-error);
+}
+
+.errorMessage {
+  font-size: 0.8rem;
+  color: var(--status-error);
+  overflow: hidden;
+  transition:
+    opacity 0.3s ease-out,
+    max-height 0.3s ease-out,
+    margin-top 0.3s ease-out;
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+}
+
+.errorMessage.visible {
+  opacity: 1;
+  max-height: 20px;
+  margin-top: 0.25rem;
+}
