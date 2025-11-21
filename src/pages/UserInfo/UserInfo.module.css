@@ -17,11 +17,13 @@
 
 .topContent {
   width: 100%;
+  background-color: var(--bg-surface);
   display: flex;
   text-align: center;
+  align-items: center;
   flex-direction: column;
   padding: 1rem;
-  border: 2px solid var(--text-heading);
+  border-bottom: 2px solid var(--text-heading);
   border-radius: 16px 16px 0 0;
 }
 
@@ -182,6 +184,7 @@
 
 .botaoEndereco {
   width: 300px;
+  background-color: var(--bg-surface);
 }
 
 .buttonBlock {

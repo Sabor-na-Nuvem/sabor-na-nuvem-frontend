@@ -1,38 +1,42 @@
-.infoContainer {
-  width: 100%;
-  max-width: 900px;
+/* --- CONTAINER GERAL --- */
+.pageContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--container-gap);
+  align-items: center;
+  min-height: 80vh;
+  padding: 20px 0;
+  width: 100%;
 }
 
-.contentBlock {
+@media (min-width: 768px) {
+  .pageContainer {
+    padding: 0px 20px;
+  }
+}
+
+/* --- CARD PRINCIPAL --- */
+.card {
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   width: 100%;
+  max-width: 1000px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  box-shadow: 0 2px 4px var(--text-body);
-  border-radius: 16px;
 }
 
 /* --- HEADER --- */
-.topContent {
-  width: 100%;
+.cardHeader {
+  background-color: var(--bg-surface);
+  padding: 20px;
+  border-bottom: 2px solid #333;
   display: flex;
-  text-align: center;
   flex-direction: column;
-  padding: 1rem;
-  border: 2px solid var(--text-heading);
-  border-radius: 16px 16px 0 0;
-}
-
-.title {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
-  text-align: center;
-  justify-content: center;
   align-items: center;
+  text-align: center;
+  gap: 5px;
 }
 
 .headerIcon {
@@ -40,13 +44,27 @@
   margin-bottom: 5px;
 }
 
+.cardTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-body);
+  margin: 0;
+}
+
+.cardSubtitle {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}
+
 /* --- SEÇÃO DE FILTROS --- */
 .filterSection {
-  padding-bottom: 20px;
+  background-color: #f0f0f0;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border-bottom: 2px solid var(--color-surface-subtle);
+  border-bottom: 1px solid #e0e0e0;
 }
 
 @media (min-width: 768px) {
@@ -77,8 +95,7 @@
   flex-direction: column;
   gap: 20px;
   flex: 1;
-  justify-content: space-evenly;
-  align-items: center;
+  justify-content: space-around;
 }
 
 @media (min-width: 768px) {
@@ -107,7 +124,6 @@
 
 .dateInputsWrapper {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 10px;
 }
@@ -119,11 +135,9 @@
 
 /* BLOCO DE PRODUTO */
 .productFilterBlock {
-  align-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   flex: 1;
   max-width: 300px;
 }
@@ -131,15 +145,15 @@
 /* INPUTS CUSTOMIZADOS */
 .inputWithIcon {
   position: relative;
-  width: min-content;
+  width: 100%;
 }
 
 .dateInput {
-  width: 90%;
+  width: 110px;
   border: none;
   border-bottom: 1px solid #666;
   background: transparent;
-  padding: 5px 0;
+  padding: 5px 25px 5px 5px;
   font-size: 0.9rem;
   text-align: center;
   outline: none;
@@ -177,6 +191,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
+  background-color: #f4f4f4;
 }
 
 @media (min-width: 900px) {

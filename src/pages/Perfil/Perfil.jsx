@@ -32,11 +32,11 @@ const Perfil = () => {
             <Button
               variant="outline-red"
               className={styles.opcoesPerfil}
-              onClick={() => navigate('/minha-conta/historico-compras')}
+              onClick={() => navigate('/minha-conta/historico-pedidos')}
               icon={<RiFileList3Line size={25} />}
               openSimbol
             >
-              Histórico de Compras
+              Histórico de Pedidos
             </Button>
             <Button
               variant="outline-red"

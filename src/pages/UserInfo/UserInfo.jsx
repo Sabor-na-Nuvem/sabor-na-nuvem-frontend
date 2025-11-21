@@ -235,10 +235,8 @@ const UserInfo = () => {
       <div className={styles.infoContainer}>
         <div className={styles.contentBlock}>
           <div className={styles.topContent}>
-            <div className={styles.title}>
-              <IoIosInformationCircleOutline size={30} />
-              <h3>Informações da Conta</h3>
-            </div>
+            <IoIosInformationCircleOutline size={30} />
+            <h3 style={{ color: 'var(--text-body)' }}>Informações da Conta</h3>
             <p style={{ fontSize: '0.9rem' }}>Gerencie suas informações pessoais</p>
           </div>
 
