@@ -12,6 +12,7 @@ import Cadastro from './pages/Cadastro';
 // import DashboardAdmin from './pages/Dashboards/DashboardAdmin';
 import ListaProdutos from './pages/ListaProdutos';
 import DetalhesProduto from './pages/DetalhesProduto';
+import HistoricoCompras from './pages/HistoricoCompras';
 
 import ScrollToTop from './components/ScrollToTop';
 import DefaultLayout from './layouts/DefaultLayout';
@@ -38,6 +39,9 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['CLIENTE']} />}>
             <Route path="/minha-conta/info" element={<UserInfo />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={['CLIENTE']} />}>
+            <Route path="/minha-conta/historico-compras" element={<HistoricoCompras />} />
           </Route>
         </Route>
 
