@@ -1,5 +1,6 @@
+/* eslint-disable no-alert */
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 import googleLogo from '../../assets/google-logo.png';
 import Input from '../../components/Input';
@@ -7,7 +8,18 @@ import Button from '../../components/Button';
 import styles from '../Login/Login.module.css';
 import ReturnLink from '../../components/ReturnLink';
 
+// --- IMPORTS DOS MODAIS ---
+import AlertModal from '../../components/Modals/AlertModal';
+import EnderecoModal from '../../components/Modals/EnderecoModal';
+import ConfirmModal from '../../components/Modals/ConfirmModal/ConfirmModal';
+import ContatoModal from '../../components/Modals/ContatoModal/ContatoModal';
+import ConfirmarEnderecoFinalModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoFinalModal';
+import ConfirmarEnderecoExistenteModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoExistenteModal';
+
 const Cadastro = () => {
+  const navigate = useNavigate();
+
+  // --- LÓGICA DO FORMULÁRIO ---
   const [email, setEmail] = useState('');
   const [nome, setNome] = useState('');
   const [senha, setSenha] = useState('');
@@ -18,65 +30,54 @@ const Cadastro = () => {
   const [confirmarSenhaError, setConfirmarSenhaError] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // --- ESTADOS DO FLUXO DE MODAIS ---
+  // Steps: 'none', 'initial_confirm', 'contact', 'check_storage', 'new_address', 'final_confirm'
+  const [modalStep, setModalStep] = useState('none');
+  const [tempData, setTempData] = useState({ telefones: null, endereco: null });
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: '',
+    msg: '',
+    type: 'primary',
+  });
+
+  const mostrarAlerta = (titulo, mensagem, tipo = 'primary') => {
+    setAlertModal({ isOpen: true, title: titulo, msg: mensagem, type: tipo });
+  };
+
   const validarCampo = (name, value, allFormValues = {}) => {
     let error = null;
-
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const MIN_LENGTH = 6;
 
-    // --- VALIDAÇÃO DE OBRIGATORIEDADE ---
     if (!value) {
-      if (name === 'email') {
-        error = 'O email é obrigatório.';
-      } else if (name === 'nome') {
-        error = 'O nome é obrigatório.';
-      } else if (name === 'senha') {
-        error = 'A senha é obrigatória.';
-      } else if (name === 'confirmarSenha') {
-        error = 'A confirmação de senha é obrigatória.';
-      }
+      if (name === 'email') error = 'O email é obrigatório.';
+      else if (name === 'nome') error = 'O nome é obrigatório.';
+      else if (name === 'senha') error = 'A senha é obrigatória.';
+      else if (name === 'confirmarSenha') error = 'A confirmação de senha é obrigatória.';
     }
-
-    // --- VALIDAÇÕES DE FORMATO, TAMANHO E CORRESPONDÊNCIA ---
 
     if (name === 'email' && !error) {
-      if (!emailRegex.test(value)) {
-        error = 'Por favor, insira um email válido (ex: seu@email.com).';
-      }
+      if (!emailRegex.test(value)) error = 'Por favor, insira um email válido (ex: seu@email.com).';
     } else if (name === 'nome' && !error) {
-      if (value.length < 3) {
-        error = 'O nome deve ter pelo menos 3 caracteres.';
-      }
+      if (value.length < 3) error = 'O nome deve ter pelo menos 3 caracteres.';
     } else if (name === 'senha' && !error) {
-      if (value.length < MIN_LENGTH) {
-        error = `A senha deve ter no mínimo ${MIN_LENGTH} caracteres.`;
-      }
+      if (value.length < MIN_LENGTH) error = `A senha deve ter no mínimo ${MIN_LENGTH} caracteres.`;
     } else if (name === 'confirmarSenha' && !error) {
       const mainPasswordValue = allFormValues.senha;
-
-      if (value !== mainPasswordValue) {
-        error = 'As senhas não coincidem.';
-      }
+      if (value !== mainPasswordValue) error = 'As senhas não coincidem.';
     }
 
-    // --- APLICAÇÃO DE ERROS ---
-    if (name === 'email') {
-      setEmailError(error);
-    } else if (name === 'nome') {
-      setNomeError(error);
-    } else if (name === 'senha') {
-      setSenhaError(error);
-    } else if (name === 'confirmarSenha') {
-      setConfirmarSenhaError(error);
-    }
+    if (name === 'email') setEmailError(error);
+    else if (name === 'nome') setNomeError(error);
+    else if (name === 'senha') setSenhaError(error);
+    else if (name === 'confirmarSenha') setConfirmarSenhaError(error);
 
     return error;
   };
 
-  // Handler para mudanças no Input
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     if (name === 'email') setEmail(value);
     if (name === 'nome') setNome(value);
     if (name === 'senha') setSenha(value);
@@ -89,49 +90,26 @@ const Cadastro = () => {
         senha: name === 'senha' ? value : senha,
         confirmarSenha: name === 'confirmarSenha' ? value : confirmarSenha,
       };
-
       validarCampo(name, value, currentValues);
-      // Se o campo alterado foi a 'senha' principal, revalide a 'confirmarSenha'
-      if (name === 'senha') {
-        validarCampo('confirmarSenha', confirmarSenha, currentValues);
-      }
-      // Se o campo alterado foi a 'confirmarSenha', revalide a 'senha' principal
-      if (name === 'confirmarSenha') {
-        validarCampo('senha', senha, currentValues);
-      }
+      if (name === 'senha') validarCampo('confirmarSenha', confirmarSenha, currentValues);
+      if (name === 'confirmarSenha') validarCampo('senha', senha, currentValues);
     }
   };
 
-  // Handler para quando o campo perde o foco
   const handleBlur = (e) => {
     if (isSubmitted) {
-      const formValues = {
-        email,
-        nome,
-        senha,
-        confirmarSenha,
-      };
-
+      const formValues = { email, nome, senha, confirmarSenha };
       validarCampo(e.target.name, e.target.value, formValues);
-      if (e.target.name === 'senha') {
-        validarCampo('confirmarSenha', confirmarSenha, formValues);
-      }
+      if (e.target.name === 'senha') validarCampo('confirmarSenha', confirmarSenha, formValues);
     }
   };
 
-  // Submissão do Formulário
+  // --- SUBMISSÃO DO FORMULÁRIO ---
   const handleSubmit = (e) => {
     e.preventDefault();
-
     setIsSubmitted(true);
 
-    const formValues = {
-      email,
-      nome,
-      senha,
-      confirmarSenha,
-    };
-
+    const formValues = { email, nome, senha, confirmarSenha };
     const emailValidation = validarCampo('email', email, formValues);
     const nomeValidation = validarCampo('nome', nome, formValues);
     const senhaValidation = validarCampo('senha', senha, formValues);
@@ -141,9 +119,76 @@ const Cadastro = () => {
       emailValidation || nomeValidation || senhaValidation || confirmarSenhaValidation;
 
     if (!hasErrors) {
-      console.log('Cadastro efetuado com sucesso!');
-      // TODO: conectar com a API
+      // SUCESSO: Inicia o fluxo de modais
+      setModalStep('initial_confirm');
     }
+  };
+
+  // --- FINALIZAÇÃO E ENVIO API ---
+  const finalizarCadastro = (comExtras) => {
+    const payload = {
+      nome,
+      email,
+      senha,
+      ...(comExtras && { telefones: tempData.telefones, endereco: tempData.endereco }),
+    };
+
+    console.log('Cadastro efetuado com sucesso!', payload);
+    // TODO: conectar com a API
+    // api.post('/cadastro', payload)...
+    if (comExtras) localStorage.removeItem('enderecoUsuarioTemp');
+    setModalStep('none');
+
+    // Aguarda um pequeno delay (300ms) para garantir que o modal antigo sumiu visualmente
+    setTimeout(() => {
+      mostrarAlerta('Cadastro realizado!', 'Realize o login para entrar em sua conta!', 'success');
+    }, 300);
+  };
+
+  // --- HANDLERS DO FLUXO DE MODAIS ---
+
+  const closeModals = () => setModalStep('none');
+
+  // 1. Falta Pouco -> Decide se continua ou finaliza
+  const handleSkipExtras = () => finalizarCadastro(false);
+  const handleStartExtras = () => setModalStep('contact');
+
+  // 2. Contato -> Salva e decide próximo passo (Storage ou Novo Endereço)
+  const handleContactSave = (dadosContato) => {
+    setTempData((prev) => ({ ...prev, telefones: dadosContato }));
+
+    const enderecoSalvo = localStorage.getItem('enderecoUsuarioTemp');
+    if (enderecoSalvo) {
+      try {
+        const enderecoObj = JSON.parse(enderecoSalvo);
+        setTempData((prev) => ({ ...prev, endereco: enderecoObj }));
+        setModalStep('check_storage');
+      } catch (e) {
+        setModalStep('new_address');
+      }
+    } else {
+      setModalStep('new_address');
+    }
+  };
+
+  // 3. Endereço Existente
+  const handleUseExistingAddress = () => setModalStep('final_confirm');
+  const handleNewAddress = () => setModalStep('new_address');
+  const handleBackToContact = () => setModalStep('contact');
+
+  // 4. Novo Endereço
+  const handleSaveNewAddress = (novoEndereco) => {
+    setTempData((prev) => ({ ...prev, endereco: novoEndereco }));
+    setModalStep('final_confirm');
+  };
+
+  // 5. Mapa Final
+  const handleFinalConfirm = () => finalizarCadastro(true);
+  const handleBackToAddress = () => {
+    const enderecoSalvo = localStorage.getItem('enderecoUsuarioTemp');
+    if (enderecoSalvo && JSON.stringify(tempData.endereco) === enderecoSalvo)
+      setModalStep('check_storage');
+    else setModalStep('new_address');
   };
 
   return (
@@ -154,7 +199,6 @@ const Cadastro = () => {
           <h1 className={styles.logoTitle}>Sabor na Nuvem</h1>
         </div>
 
-        {/* Formulário de Cadastro */}
         <form onSubmit={handleSubmit} className={styles.authForm}>
           <Input
             label="Email"
@@ -166,7 +210,6 @@ const Cadastro = () => {
             error={emailError}
             maxLength={255}
           />
-
           <Input
             label="Nome"
             type="text"
@@ -177,7 +220,6 @@ const Cadastro = () => {
             error={nomeError}
             maxLength={50}
           />
-
           <Input
             label="Senha"
             type="password"
@@ -188,7 +230,6 @@ const Cadastro = () => {
             error={senhaError}
             maxLength={128}
           />
-
           <Input
             label="Confirmar senha"
             type="password"
@@ -200,36 +241,97 @@ const Cadastro = () => {
             maxLength={128}
           />
 
-          {/* Botão Cadastrar */}
           <Button type="submit" variant="primary" className={styles.fullWidth}>
             Cadastrar
           </Button>
 
           <p className={styles.orDivider}>Ou...</p>
-
-          {/* Botão Google (Usando variante outline-yellow) */}
           <Button
             type="button"
             variant="outline-yellow"
             className={`${styles.fullWidth} ${styles.googleButton}`}
           >
             <span>Continuar com</span>
-
             <img src={googleLogo} alt="Logo do Google" style={{ height: '1rem', width: 'auto' }} />
           </Button>
         </form>
 
-        {/* Link Voltar */}
         <ReturnLink to="/" text="Voltar para Home" className={styles.returnLink} />
-
-        {/* Link para Login */}
         <p className={styles.registerPrompt}>
-          Já tem uma conta?
+          Já tem uma conta?{' '}
           <Link to="/login" className={styles.registerLink}>
             Fazer login
           </Link>
         </p>
       </div>
+
+      {/* --- RENDERIZAÇÃO DOS MODAIS --- */}
+
+      {modalStep === 'initial_confirm' && (
+        <ConfirmModal
+          title="Falta pouco..."
+          description={
+            <>
+              <strong>Deseja cadastrar seu endereço e/ou informações de contato agora?</strong>
+              <br />
+              <br />
+              Você também pode alterar suas informações outra hora, só lembre-se que elas são
+              necessárias para a realização de deliveries!
+            </>
+          }
+          confirmText="Cadastrar"
+          cancelText="Deixar para depois"
+          variant="primary"
+          onConfirm={handleStartExtras}
+          onCancel={handleSkipExtras}
+          onClose={closeModals}
+        />
+      )}
+
+      {modalStep === 'contact' && (
+        <ContatoModal onClose={closeModals} onContinue={handleContactSave} />
+      )}
+
+      {modalStep === 'check_storage' && tempData.endereco && (
+        <ConfirmarEnderecoExistenteModal
+          endereco={tempData.endereco}
+          onClose={closeModals}
+          onConfirm={handleUseExistingAddress}
+          onUseNew={handleNewAddress}
+          onBack={handleBackToContact}
+        />
+      )}
+
+      {modalStep === 'new_address' && (
+        <EnderecoModal
+          onClose={closeModals}
+          onSave={handleSaveNewAddress}
+          textoBotao="Continuar"
+          initialData={tempData.endereco}
+          startEditing={true}
+        />
+      )}
+
+      {modalStep === 'final_confirm' && tempData.endereco && (
+        <ConfirmarEnderecoFinalModal
+          endereco={tempData.endereco}
+          onBack={handleBackToAddress}
+          onConfirm={handleFinalConfirm}
+        />
+      )}
+
+      {alertModal.isOpen && (
+        <AlertModal
+          title={alertModal.title}
+          description={alertModal.msg}
+          variant={alertModal.type === 'error' ? 'primary' : 'outline-success'}
+          icon={alertModal.type === 'error' ? 'error' : 'success'}
+          onClose={() => {
+            setAlertModal({ ...alertModal, isOpen: false });
+            navigate('/login');
+          }}
+        />
+      )}
     </div>
   );
 };

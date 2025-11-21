@@ -1,0 +1,11 @@
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.fullButton {
+  width: 100%;
+  max-width: 300px;
+}

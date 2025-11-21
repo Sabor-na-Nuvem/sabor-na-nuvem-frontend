@@ -1,0 +1,109 @@
+.containerWide {
+  max-width: 650px;
+}
+
+.messageBox {
+  margin-bottom: 20px;
+  color: var(--text-heading);
+}
+
+.messageBox p {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 5px 0;
+}
+
+.subText {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Grid de leitura */
+.readOnlyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.field {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #333;
+  display: block;
+}
+
+.field p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* Footer Actions */
+.footerActions {
+  display: flex;
+  width: 100%;
+  gap: 15px;
+  justify-content: center;
+}
+
+.actionBtn {
+  flex: 1;
+  max-width: 200px;
+}
+
+/* --- Estilos do Modal Final (Mapa) --- */
+.backButton {
+  position: absolute;
+  left: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+  padding: 5px;
+}
+
+.addressSummary {
+  background-color: #f0f4f8;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #d1e3f8;
+}
+
+.addressSummary h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+}
+
+.addressSummary p {
+  margin: 0;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.mapPlaceholder {
+  width: 100%;
+  height: 250px;
+  background-color: #e0efff; /* Azul clarinho simulando mar/fundo mapa */
+  border-radius: 12px;
+  border: 2px dashed #a0cfff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.pinIcon {
+  font-size: 3rem;
+  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.2));
+}
+
+.fullButton {
+  width: 100%;
+  max-width: 300px;
+}

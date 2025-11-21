@@ -44,14 +44,16 @@
 /* --- HEADER --- */
 .modalHeader {
   background-color: #fff;
-  padding: 20px;
+  padding: 15px 20px;
   border-bottom: 2px solid #333;
+
   display: flex;
-  justify-content: center;
   align-items: center;
-  position: relative;
+  justify-content: space-between;
+
   border-radius: 16px 16px 0 0;
-  min-height: 70px;
+  min-height: 60px;
+  position: relative;
 }
 
 .modalTitle {
@@ -59,19 +61,33 @@
   font-weight: 800;
   color: var(--text-heading, #333);
   margin: 0;
+
+  flex: 1;
   text-align: center;
+
+  white-space: wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-left: 32px; /* Tamanho aproximado do botão de fechar */
 }
 
 /* Botão de Fechar (X) */
 .closeButton {
-  position: absolute;
   background: none;
   border: none;
   cursor: pointer;
   color: #666;
-  padding: 8px;
+  padding: 4px;
+
+  /* Tamanho fixo para não esmagar */
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   transition: color 0.2s;
-  right: 15px;
+  flex-shrink: 0;
 }
 
 .closeButton:hover {

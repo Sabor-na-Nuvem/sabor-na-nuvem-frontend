@@ -18,7 +18,9 @@ const DetalhesPedidoModal = ({ pedido, onClose, onRepeatOrder, onCancelOrder }) 
   };
 
   // Chamado quando a animação CSS termina
-  const handleAnimationEnd = () => {
+  const handleAnimationEnd = (e) => {
+    if (e.target !== e.currentTarget) return;
+
     if (isClosing) {
       onClose();
       setIsClosing(false);
