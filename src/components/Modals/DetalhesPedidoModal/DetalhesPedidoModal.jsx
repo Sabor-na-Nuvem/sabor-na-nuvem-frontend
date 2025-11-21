@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { LuX, LuStore, LuShoppingBag } from 'react-icons/lu';
-import Button from '../Button';
+import { LuX, LuStore, LuShoppingBag, LuBan } from 'react-icons/lu';
+import Button from '../../Button';
 import styles from './DetalhesPedidoModal.module.css';
+import shared from '../ModalShared.module.css';
 
-const DetalhesPedidoModal = ({ pedido, onClose, onRepeatOrder }) => {
+const DetalhesPedidoModal = ({ pedido, onClose, onRepeatOrder, onCancelOrder }) => {
   const [isClosing, setIsClosing] = useState(false);
+  const isCancelable = ['Pendente', 'Aguardando pagamento'].includes(pedido.status);
 
   if (!pedido) return null;
 
@@ -25,24 +27,24 @@ const DetalhesPedidoModal = ({ pedido, onClose, onRepeatOrder }) => {
 
   return (
     <div
-      className={`${styles.overlay} ${isClosing ? styles.overlayClosing : ''}`}
+      className={`${shared.overlay} ${isClosing ? shared.overlayClosing : ''}`}
       onClick={handleClose} // Clicar fora fecha com animação
       onAnimationEnd={handleAnimationEnd} // Escuta o fim da animação
     >
       <div
-        className={`${styles.modalContainer} ${isClosing ? styles.modalContainerClosing : ''}`}
+        className={`${shared.modalContainer} ${isClosing ? shared.modalContainerClosing : ''}`}
         onClick={(e) => e.stopPropagation()} // Impede que clique dentro feche
       >
         {/* Header do Modal */}
-        <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>Detalhes do Pedido</h2>
-          <button className={styles.closeButton} onClick={handleClose}>
+        <div className={shared.modalHeader}>
+          <h2 className={`${shared.modalTitle} ${styles.underlinedTitle}`}>Detalhes do Pedido</h2>
+          <button className={shared.closeButton} onClick={handleClose}>
             <LuX size={24} />
           </button>
         </div>
 
         {/* Conteúdo com Scroll */}
-        <div className={styles.modalContent}>
+        <div className={shared.modalContent}>
           {/* Seção de Informações Gerais (Grid) */}
           <div className={styles.infoGrid}>
             <div className={styles.infoItem}>
@@ -57,7 +59,20 @@ const DetalhesPedidoModal = ({ pedido, onClose, onRepeatOrder }) => {
             </div>
             <div className={styles.infoItem}>
               <span className={styles.label}>Status:</span>
-              <span className={styles.value}>{pedido.status}</span>
+              <span
+                className={styles.value}
+                style={{
+                  color:
+                    // eslint-disable-next-line no-nested-ternary
+                    pedido.status === 'Cancelado'
+                      ? 'var(--status-error)'
+                      : pedido.status === 'Realizado'
+                        ? 'var(--status-success)'
+                        : 'inherit',
+                }}
+              >
+                {pedido.status}
+              </span>
             </div>
             <div className={styles.infoItem}>
               <span className={styles.label}>Cupom de desconto:</span>
@@ -126,15 +141,29 @@ const DetalhesPedidoModal = ({ pedido, onClose, onRepeatOrder }) => {
         </div>
 
         {/* Footer Fixo */}
-        <div className={styles.modalFooter}>
-          <Button
-            variant="outline-red"
-            className={styles.repeatButton}
-            onClick={() => onRepeatOrder(pedido)}
-          >
-            <LuShoppingBag size={18} style={{ marginRight: 8 }} />
-            Adicionar itens ao carrinho
-          </Button>
+        <div className={shared.modalFooter}>
+          {isCancelable ? (
+            // BOTÃO DE CANCELAR (Aparece se for Pendente)
+            <Button
+              variant="primary" // Usamos primary (vermelho) para ação de cancelar
+              className={styles.repeatButton}
+              onClick={() => onCancelOrder(pedido)}
+              style={{ backgroundColor: '#ef4444', borderColor: '#ef4444' }} // Forçar vermelho erro
+            >
+              <LuBan size={18} style={{ marginRight: 8 }} />
+              Cancelar Pedido
+            </Button>
+          ) : (
+            // BOTÃO DE REPETIR (Aparece para os demais)
+            <Button
+              variant="outline-red"
+              className={styles.repeatButton}
+              onClick={() => onRepeatOrder(pedido)}
+            >
+              <LuShoppingBag size={18} style={{ marginRight: 8 }} />
+              Adicionar itens ao carrinho
+            </Button>
+          )}
         </div>
       </div>
     </div>
@@ -167,6 +196,7 @@ DetalhesPedidoModal.propTypes = {
   }),
   onClose: PropTypes.func.isRequired,
   onRepeatOrder: PropTypes.func.isRequired,
+  onCancelOrder: PropTypes.func.isRequired,
 };
 
 export default DetalhesPedidoModal;

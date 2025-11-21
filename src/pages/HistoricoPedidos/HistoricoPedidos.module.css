@@ -149,12 +149,12 @@
 }
 
 .dateInput {
-  width: 110px;
+  width: 130px;
   border: none;
   border-bottom: 1px solid #666;
   background: transparent;
-  padding: 5px 25px 5px 5px;
-  font-size: 0.9rem;
+  padding: 5px 2px;
+  font-size: 0.95rem;
   text-align: center;
   outline: none;
 }

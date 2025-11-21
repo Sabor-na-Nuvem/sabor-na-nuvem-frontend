@@ -7,6 +7,7 @@ import styles from './UserInfo.module.css';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputCelular from '../../components/InputCelular';
+import EnderecoModal from '../../components/Modals/EnderecoModal';
 import { useAuth } from '../../contexts/AuthContext';
 
 // --- COMPONENTE AUXILIAR ---
@@ -119,6 +120,8 @@ const UserInfo = () => {
     celularReserva: true,
   });
 
+  const [enderecoModalIsOpen, setEnderecoModalIsOpen] = useState(false);
+
   // Carrega dados iniciais
   useEffect(() => {
     if (user) {
@@ -222,6 +225,30 @@ const UserInfo = () => {
     if (name === 'celularReserva') setCelularReserva(value);
   };
 
+  // --- Handlers do Modal ---
+  const handleOpenEndereco = () => {
+    setEnderecoModalIsOpen(true);
+  };
+
+  const handleCloseEndereco = () => {
+    setEnderecoModalIsOpen(false);
+  };
+
+  const handleAtualizaEndereco = async (dadosEndereco) => {
+    try {
+      await updateUser({ endereco: dadosEndereco });
+
+      setEnderecoModalIsOpen(false);
+
+      // eslint-disable-next-line no-alert
+      alert('Endereço atualizado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar endereço:', error);
+      // eslint-disable-next-line no-alert
+      alert('Não foi possível atualizar o endereço. Tente novamente.');
+    }
+  };
+
   if (loading) {
     return (
       <Section>
@@ -296,7 +323,11 @@ const UserInfo = () => {
             />
 
             <div className={styles.botaoEnderecoContainer}>
-              <Button variant="outline-yellow" className={styles.botaoEndereco}>
+              <Button
+                variant="outline-yellow"
+                className={styles.botaoEndereco}
+                onClick={handleOpenEndereco}
+              >
                 Ver endereço
               </Button>
             </div>
@@ -309,6 +340,15 @@ const UserInfo = () => {
           </Button>
         </div>
       </div>
+
+      {/* RENDERIZAÇÃO DO MODAL */}
+      {enderecoModalIsOpen && (
+        <EnderecoModal
+          onClose={handleCloseEndereco}
+          onSave={handleAtualizaEndereco}
+          initialData={user?.endereco}
+        />
+      )}
     </Section>
   );
 };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LuScrollText, LuFilter, LuListFilter } from 'react-icons/lu';
 import Section from '../../components/Section';
 import Button from '../../components/Button';
-import DetalhesPedidoModal from '../../components/DetalhesPedidoModal';
+import DetalhesPedidoModal from '../../components/Modals/DetalhesPedidoModal';
 import MOCK_PEDIDOS from '../../data/pedidos';
 import styles from './HistoricoPedidos.module.css';
 
@@ -94,6 +94,25 @@ const HistoricoPedidos = () => {
     // eslint-disable-next-line no-alert
     alert(`Adicionando ${pedido.itens.length} itens ao carrinho!`);
     handleCloseDetails();
+  };
+
+  const handleCancelOrder = (pedidoParaCancelar) => {
+    // 1. Confirmação nativa (simples e eficaz para Mobile)
+    // eslint-disable-next-line no-alert
+    if (window.confirm('Tem certeza que deseja cancelar este pedido?')) {
+      // Atualiza o estado local para refletir a mudança imediatamente
+      const atualizarLista = (lista) =>
+        lista.map((p) => (p.id === pedidoParaCancelar.id ? { ...p, status: 'Cancelado' } : p));
+
+      setTodosOsPedidos(atualizarLista);
+      setPedidosMostrados(atualizarLista);
+      setPedidoSelecionado({ ...pedidoParaCancelar, status: 'Cancelado' });
+
+      // TODO: Chamar API do backend
+      // api.patch(`/pedidos/${pedidoParaCancelar.id}/cancelar`)
+      // eslint-disable-next-line no-alert
+      alert('Pedido cancelado com sucesso.');
+    }
   };
 
   return (
@@ -226,6 +245,7 @@ const HistoricoPedidos = () => {
           pedido={pedidoSelecionado}
           onClose={handleCloseDetails}
           onRepeatOrder={handleRepeatOrder}
+          onCancelOrder={handleCancelOrder}
         />
       )}
     </Section>
