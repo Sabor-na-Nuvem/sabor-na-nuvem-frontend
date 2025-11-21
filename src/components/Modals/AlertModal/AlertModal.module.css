@@ -1,0 +1,35 @@
+.containerSmall {
+  max-width: 400px;
+}
+
+.description {
+  color: var(--text-body, #555);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.iconWrapper {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.iconSuccess {
+  color: var(--status-success, #4caf50);
+}
+
+.iconError {
+  color: var(--status-error, #f44336);
+}
+
+.actions {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.button {
+  width: 100%;
+  max-width: 200px;
+}
