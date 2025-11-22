@@ -7,10 +7,11 @@ import styles from './UserInfo.module.css';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputCelular from '../../components/InputCelular';
-import EnderecoModal from '../../components/Modals/EnderecoModal';
+import EnderecoModal from '../../components/Modals/EnderecoModal/EnderecoModal';
+import AlertModal from '../../components/Modals/AlertModal/AlertModal';
 import { useAuth } from '../../contexts/AuthContext';
 
-// --- COMPONENTE AUXILIAR ---
+// --- COMPONENTE AUXILIAR (EditableRow) ---
 const EditableRow = ({
   label,
   name,
@@ -43,7 +44,6 @@ const EditableRow = ({
 
       <div className={styles.actionsContainer}>
         {isLocked ? (
-          // MODO VISUALIZAÇÃO: Botão Editar
           <button
             className={styles.editIconBtn}
             onClick={() => onEditClick(name)}
@@ -53,7 +53,6 @@ const EditableRow = ({
             <LuPencilLine size={18} />
           </button>
         ) : (
-          // MODO EDIÇÃO: Botões Salvar e Cancelar
           <>
             <button
               className={`${styles.actionBtn} ${styles.cancelBtn}`}
@@ -104,14 +103,13 @@ EditableRow.propTypes = {
 const UserInfo = () => {
   const { user, loading, updateUser } = useAuth();
 
-  // Estados dos campos
+  // Estados dos campos de usuário
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [celular, setCelular] = useState('');
   const [celularReserva, setCelularReserva] = useState('');
 
   const [savingFields, setSavingFields] = useState({});
-
   const [errors, setErrors] = useState({});
   const [disabledFields, setDisabledFields] = useState({
     nome: true,
@@ -121,6 +119,23 @@ const UserInfo = () => {
   });
 
   const [enderecoModalIsOpen, setEnderecoModalIsOpen] = useState(false);
+
+  // Estado para controlar o AlertModal
+  const [alertInfo, setAlertInfo] = useState({
+    isOpen: false,
+    title: '',
+    msg: '',
+    type: 'primary', // 'primary', 'success', 'error'
+  });
+
+  // Helper para mostrar alerta facilmente
+  const showAlert = (title, msg, type = 'primary') => {
+    setAlertInfo({ isOpen: true, title, msg, type });
+  };
+
+  const closeAlert = () => {
+    setAlertInfo((prev) => ({ ...prev, isOpen: false }));
+  };
 
   // Carrega dados iniciais
   useEffect(() => {
@@ -157,7 +172,6 @@ const UserInfo = () => {
     return error;
   };
 
-  // Função Helper para reverter valor ao cancelar
   const getOriginalValue = (fieldName) => {
     if (!user) return '';
     if (fieldName === 'nome') return user.nome || '';
@@ -192,6 +206,13 @@ const UserInfo = () => {
     setDisabledFields((prev) => ({ ...prev, [fieldName]: true }));
   };
 
+  const capitalizeFirstLetter = (str) => {
+    if (typeof str !== 'string' || str.length === 0) {
+      return str;
+    }
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
   const handleSave = async (fieldName) => {
     let valueToSave = '';
     if (fieldName === 'nome') valueToSave = nome;
@@ -205,13 +226,13 @@ const UserInfo = () => {
     setSavingFields((prev) => ({ ...prev, [fieldName]: true }));
 
     try {
-      // Chama o Contexto para atualizar (Simula API)
-      // Nota: Para telefones, a lógica seria mais complexa (separar DDD)
       await updateUser({ [fieldName]: valueToSave });
-
       setDisabledFields((prev) => ({ ...prev, [fieldName]: true }));
+
+      showAlert('Sucesso', `${capitalizeFirstLetter(fieldName)} atualizado!`, 'success');
     } catch (err) {
       setErrors((prev) => ({ ...prev, [fieldName]: 'Erro ao salvar.' }));
+      showAlert('Erro', 'Não foi possível salvar as alterações.', 'error');
     } finally {
       setSavingFields((prev) => ({ ...prev, [fieldName]: false }));
     }
@@ -234,18 +255,15 @@ const UserInfo = () => {
     setEnderecoModalIsOpen(false);
   };
 
+  // --- FUNÇÃO DE SALVAR ENDEREÇO ---
   const handleAtualizaEndereco = async (dadosEndereco) => {
     try {
       await updateUser({ endereco: dadosEndereco });
-
       setEnderecoModalIsOpen(false);
 
-      // eslint-disable-next-line no-alert
-      alert('Endereço atualizado com sucesso!');
+      showAlert('Sucesso!', 'Endereço atualizado com sucesso!', 'success');
     } catch (error) {
-      console.error('Erro ao salvar endereço:', error);
-      // eslint-disable-next-line no-alert
-      alert('Não foi possível atualizar o endereço. Tente novamente.');
+      showAlert('Erro', 'Não foi possível atualizar o endereço. Tente novamente.', 'error');
     }
   };
 
@@ -262,8 +280,10 @@ const UserInfo = () => {
       <div className={styles.infoContainer}>
         <div className={styles.contentBlock}>
           <div className={styles.topContent}>
-            <IoIosInformationCircleOutline size={30} />
-            <h3 style={{ color: 'var(--text-body)' }}>Informações da Conta</h3>
+            <div className={styles.title}>
+              <IoIosInformationCircleOutline size={30} />
+              <h3 style={{ color: 'var(--text-body)' }}>Informações da Conta</h3>
+            </div>
             <p style={{ fontSize: '0.9rem' }}>Gerencie suas informações pessoais</p>
           </div>
 
@@ -341,12 +361,23 @@ const UserInfo = () => {
         </div>
       </div>
 
-      {/* RENDERIZAÇÃO DO MODAL */}
+      {/* RENDERIZAÇÃO DOS MODAIS */}
       {enderecoModalIsOpen && (
         <EnderecoModal
           onClose={handleCloseEndereco}
           onSave={handleAtualizaEndereco}
           initialData={user?.endereco}
+        />
+      )}
+
+      {/* 5. Renderização do AlertModal */}
+      {alertInfo.isOpen && (
+        <AlertModal
+          title={alertInfo.title}
+          description={alertInfo.msg}
+          variant={alertInfo.type === 'error' ? 'primary' : 'outline-success'}
+          icon={alertInfo.type === 'error' ? 'error' : 'success'}
+          onClose={closeAlert}
         />
       )}
     </Section>

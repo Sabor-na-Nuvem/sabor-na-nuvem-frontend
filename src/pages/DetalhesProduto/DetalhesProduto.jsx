@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Section from '../../components/Section';
@@ -7,41 +6,10 @@ import QuantitySelector from '../../components/QuantitySelector';
 import CustomizationGroup from '../../components/GrupoPersonalizavel';
 import styles from './DetalhesProduto.module.css';
 import MOCK_PRODUTOS from '../../data/produtos';
-import MOCK_MODIFICADORES from '../../data/modificadores';
 import { useCarrinho } from '../../contexts/CarrinhoContext';
+import AlertModal from '../../components/Modals/AlertModal';
+import { getModificadorData, calcularPrecoTotal, formatCurrency } from '../../utils/produtoUtils';
 
-// Funções auxiliares
-const getModificadorData = (id) => MOCK_MODIFICADORES.find((m) => m.id === id);
-
-const calcularPrecoTotal = (produto, qtdProduto, modificadoresSelecionadosUI) => {
-  if (!produto) return 0;
-  const precoProdutoBase = produto.preco;
-  let precoTotalModificadores = 0;
-
-  Object.values(modificadoresSelecionadosUI).forEach((selectedValue) => {
-    // Caso 1: Seleção única (radio button) - selectedValue é um ID
-    if (typeof selectedValue === 'number' && selectedValue !== null) {
-      const modifier = MOCK_MODIFICADORES.find((m) => m.id === selectedValue);
-      if (modifier && modifier.precoAdicional > 0) {
-        precoTotalModificadores += modifier.precoAdicional;
-      }
-    }
-    // Caso 2: Múltipla seleção (checkboxes) - selectedValue é um array de IDs
-    else if (Array.isArray(selectedValue)) {
-      selectedValue.forEach((modifierId) => {
-        const modifier = MOCK_MODIFICADORES.find((m) => m.id === modifierId);
-        if (modifier && modifier.precoAdicional > 0) {
-          precoTotalModificadores += modifier.precoAdicional;
-        }
-      });
-    }
-  });
-
-  const finalPrice = (precoProdutoBase + precoTotalModificadores) * qtdProduto;
-  return finalPrice;
-};
-
-// Página
 const DetalhesProduto = () => {
   const params = useParams();
   const produtoId = Number(params.produtoId);
@@ -49,6 +17,14 @@ const DetalhesProduto = () => {
 
   const [qtdProduto, setQtdProduto] = useState(1);
   const [modificadoresSelecionadosUI, setModificadoresSelecionadosUI] = useState({});
+
+  // Estado para controlar o AlertModal
+  const [alertInfo, setAlertInfo] = useState({
+    isOpen: false,
+    title: '',
+    msg: '',
+    type: 'success',
+  });
 
   const { adicionarItem } = useCarrinho();
 
@@ -80,15 +56,18 @@ const DetalhesProduto = () => {
     }));
   }, []);
 
+  // Usa a função utilitária para cálculo
   const valorTotal = useMemo(
     () => calcularPrecoTotal(produto, qtdProduto, modificadoresSelecionadosUI),
     [produto, qtdProduto, modificadoresSelecionadosUI]
   );
 
-  const valorTotalFormatado = valorTotal.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  });
+  // Usa a função utilitária para formatação
+  const valorTotalFormatado = formatCurrency(valorTotal);
+
+  const closeAlert = () => {
+    setAlertInfo((prev) => ({ ...prev, isOpen: false }));
+  };
 
   const handleAdicionarAoCarrinho = () => {
     if (!produto) return;
@@ -96,6 +75,7 @@ const DetalhesProduto = () => {
     const modificadoresParaCarrinho = [];
     Object.values(modificadoresSelecionadosUI).forEach((selectedValue) => {
       const addModToArray = (modId) => {
+        // Usa a função utilitária para buscar dados
         const modData = getModificadorData(modId);
         if (modData) {
           modificadoresParaCarrinho.push({
@@ -124,9 +104,13 @@ const DetalhesProduto = () => {
     };
 
     adicionarItem(itemParaCarrinho);
-    // TODO: Adicionar Alert e Confirm personalizado
-    // eslint-disable-next-line no-alert
-    alert(`${qtdProduto}x ${produto.nome} adicionado ao carrinho!`);
+
+    setAlertInfo({
+      isOpen: true,
+      title: 'Adicionado!',
+      msg: `${qtdProduto}x ${produto.nome} foi adicionado ao seu carrinho com sucesso.`,
+      type: 'success',
+    });
   };
 
   if (!produto) {
@@ -198,6 +182,16 @@ const DetalhesProduto = () => {
           </Link>
         </div>
       </div>
+
+      {alertInfo.isOpen && (
+        <AlertModal
+          title={alertInfo.title}
+          description={alertInfo.msg}
+          variant={alertInfo.type === 'error' ? 'primary' : 'outline-success'}
+          icon={alertInfo.type === 'error' ? 'error' : 'success'}
+          onClose={closeAlert}
+        />
+      )}
     </Section>
   );
 };

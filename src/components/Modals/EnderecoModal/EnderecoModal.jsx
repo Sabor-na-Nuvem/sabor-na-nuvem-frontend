@@ -350,7 +350,8 @@ const EnderecoModal = ({
               >
                 {isLocating ? (
                   <>
-                    <LuLoaderCircle className="animate-spin mr-2" /> Localizando...
+                    <LuLoaderCircle className={styles.spinning} style={{ marginRight: 8 }} />
+                    Localizando...
                   </>
                 ) : (
                   <>
@@ -383,7 +384,7 @@ const EnderecoModal = ({
                 />
                 {isFetchingCep && (
                   <div style={{ position: 'absolute', right: 10, top: 38, color: '#c25153' }}>
-                    <LuLoaderCircle className="animate-spin" />
+                    <LuLoaderCircle className={styles.spinning} />
                   </div>
                 )}
 
@@ -507,7 +508,8 @@ const EnderecoModal = ({
                   >
                     {isGeocoding ? (
                       <>
-                        <LuLoaderCircle className="animate-spin mr-2" /> Buscando...
+                        <LuLoaderCircle className={styles.spinning} style={{ marginRight: 8 }} />
+                        Buscando...
                       </>
                     ) : isUserPage ? (
                       'Salvar Alterações'

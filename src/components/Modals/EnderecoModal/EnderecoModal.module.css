@@ -44,7 +44,6 @@
   padding-bottom: 4px;
 }
 
-/* --- GRID E INPUTS --- */
 .formGrid {
   display: grid;
   grid-template-columns: 1fr;
@@ -64,11 +63,11 @@
 .spanFull {
   grid-column: 1 / -1;
 }
+
 .spanHalf {
   grid-column: span 1;
 }
 
-/* Transições suaves para os campos */
 .formGrid input,
 .formGrid select {
   transition:
@@ -78,7 +77,6 @@
     padding 0.3s ease;
 }
 
-/* MODO LEITURA */
 .modeReading input,
 .modeReading select {
   border-bottom: 1px solid transparent !important;
@@ -99,8 +97,6 @@
   transition: margin-top 0.3s ease;
 }
 
-/* MODO EDIÇÃO (CORRIGIDO) */
-/* Removemos o !important e aumentamos a especificidade com .formGrid */
 .modeEditing.formGrid input,
 .modeEditing.formGrid select {
   background-color: #fff;
@@ -114,28 +110,25 @@
   margin-top: 0;
 }
 
-/* --- ANIMAÇÃO DE AUTOCOMPLETE --- */
 @keyframes flashFill {
   0% {
-    background-color: rgba(255, 207, 42, 0.3); /* Amarelo suave */
+    background-color: rgba(255, 207, 42, 0.3);
     border-bottom-color: var(--color-primary);
     transform: scale(1.02);
   }
   100% {
-    background-color: #fff; /* Volta para o branco do modo edição */
+    background-color: #fff;
     border-bottom-color: var(--color-surface-subtle);
     transform: scale(1);
   }
 }
 
-/* Aplica a animação aos inputs/selects dentro da classe autoFilled */
 .autoFilled input,
 .autoFilled select {
   animation: flashFill 1.5s ease-out forwards;
   will-change: background-color, transform;
 }
 
-/* Link "Não sei meu CEP" */
 .findCepLink {
   position: absolute;
   right: 0;
@@ -160,7 +153,6 @@
   text-decoration: none;
 }
 
-/* Footer */
 .modalFooterContent {
   width: 100%;
   display: flex;
@@ -184,6 +176,7 @@
   width: 100%;
   max-width: 300px;
 }
+
 .footerActions {
   display: flex;
   gap: 15px;
@@ -191,6 +184,7 @@
   justify-content: center;
   animation: fadeIn 0.3s ease-out;
 }
+
 .submitButton {
   flex: 2;
   max-width: 300px;
@@ -200,6 +194,7 @@
     background-color 0.2s ease,
     transform 0.1s ease;
 }
+
 .cancelButton {
   flex: 1;
   max-width: 120px;
@@ -209,7 +204,23 @@
   border-radius: 8px;
   transition: all 0.2s ease;
 }
+
 .cancelButton:hover {
   background-color: #eee;
   color: #333;
+}
+
+/* --- ANIMAÇÃO DE LOADING (SPIN) --- */
+.spinning {
+  animation: spin 1s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
