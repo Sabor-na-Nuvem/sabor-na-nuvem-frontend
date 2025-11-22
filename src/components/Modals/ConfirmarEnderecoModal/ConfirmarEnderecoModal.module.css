@@ -2,60 +2,6 @@
   max-width: 650px;
 }
 
-.messageBox {
-  margin-bottom: 20px;
-  color: var(--text-heading);
-}
-
-.messageBox p {
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin: 5px 0;
-}
-
-.subText {
-  font-size: 0.85rem;
-  color: #666;
-}
-
-/* Grid de leitura */
-.readOnlyGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-}
-
-.field {
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 5px;
-}
-
-.field label {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #333;
-  display: block;
-}
-
-.field p {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #555;
-}
-
-/* Footer Actions */
-.footerActions {
-  display: flex;
-  width: 100%;
-  gap: 15px;
-  justify-content: center;
-}
-
-.actionBtn {
-  flex: 1;
-  max-width: 200px;
-}
-
 /* --- Estilos do Modal Final (Mapa) --- */
 .backButton {
   position: absolute;
@@ -67,36 +13,92 @@
   padding: 5px;
 }
 
+/* Resumo do Endereço */
 .addressSummary {
-  background-color: #f0f4f8;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #d1e3f8;
+  background-color: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  text-align: center; /* Centralizado para focar na leitura */
 }
 
 .addressSummary h3 {
-  margin: 0 0 5px 0;
-  font-size: 1.1rem;
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  color: var(--text-heading, #333);
 }
 
-.addressSummary p {
+.addressText {
   margin: 0;
   color: #555;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  line-height: 1.8; /* Altura de linha maior para caber o input */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.cepText {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 5px;
+  display: block;
+}
+
+/* --- INPUT DE NÚMERO INLINE --- */
+.inlineInput {
+  width: 50px; /* Largura para ~3-4 caracteres */
+  border: none;
+  border-bottom: 2px solid var(--color-primary, #c25153);
+  background-color: #fff3cd;
+  color: #333;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  padding: 0 4px;
+  border-radius: 4px 4px 0 0;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.inlineInput:focus {
+  background-color: #fff;
+  border-bottom-width: 3px;
+  transform: scale(1.1);
+}
+
+/* AVISO DE ATENÇÃO */
+.warningMessage {
+  background-color: #fff3cd; /* Amarelo alerta */
+  color: #856404;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-bottom: 20px;
+  border: 1px solid #ffeeba;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 /* Wrapper para o Mapa */
 .mapWrapper {
+  min-height: 200px;
   width: 100%;
   height: 250px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: relative;
+  border: 1px solid #e0e0e0;
+  flex-shrink: 0;
 }
 
-/* Placeholder de Loading do Mapa */
 .mapPlaceholderLoading {
   width: 100%;
   height: 100%;
@@ -108,6 +110,23 @@
   gap: 10px;
   color: #666;
   font-size: 0.9rem;
+}
+
+.mapOverlayHint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 400;
+  text-align: center;
 }
 
 .fullButton {

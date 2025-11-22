@@ -218,7 +218,7 @@ const Cadastro = () => {
             name="email"
             error={emailError}
             maxLength={255}
-            autocomplete="email"
+            autoComplete="email"
           />
           <Input
             label="Nome"
@@ -239,7 +239,7 @@ const Cadastro = () => {
             name="senha"
             error={senhaError}
             maxLength={128}
-            autocomplete="new-password"
+            autoComplete="new-password"
           />
           <Input
             label="Confirmar senha"
@@ -250,7 +250,7 @@ const Cadastro = () => {
             name="confirmarSenha"
             error={confirmarSenhaError}
             maxLength={128}
-            autocomplete="new-password"
+            autoComplete="new-password"
           />
 
           <Button type="submit" variant="primary" className={styles.fullWidth}>

@@ -7,8 +7,8 @@ import styles from './UserInfo.module.css';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import InputCelular from '../../components/InputCelular';
-import EnderecoModal from '../../components/Modals/EnderecoModal/EnderecoModal';
-import AlertModal from '../../components/Modals/AlertModal/AlertModal';
+import EnderecoModal from '../../components/Modals/EnderecoModal';
+import AlertModal from '../../components/Modals/AlertModal';
 import { useAuth } from '../../contexts/AuthContext';
 
 // --- COMPONENTE AUXILIAR (EditableRow) ---
