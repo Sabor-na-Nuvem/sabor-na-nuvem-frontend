@@ -1,4 +1,3 @@
-/* eslint-disable no-alert */
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
@@ -125,19 +124,24 @@ const Cadastro = () => {
   };
 
   // --- FINALIZAÇÃO E ENVIO API ---
-  const finalizarCadastro = (comExtras) => {
+  const finalizarCadastro = (comExtras, enderecoOverride = null) => {
+    const enderecoFinal = enderecoOverride || tempData.endereco;
+
     const payload = {
       nome,
       email,
       senha,
-      ...(comExtras && { telefones: tempData.telefones, endereco: tempData.endereco }),
+      ...(comExtras && {
+        telefones: tempData.telefones,
+        endereco: enderecoFinal,
+      }),
     };
+    setModalStep('none');
 
     console.log('Cadastro efetuado com sucesso!', payload);
     // TODO: conectar com a API
     // api.post('/cadastro', payload)...
     if (comExtras) localStorage.removeItem('enderecoUsuarioTemp');
-    setModalStep('none');
 
     // Aguarda um pequeno delay (300ms) para garantir que o modal antigo sumiu visualmente
     setTimeout(() => {
@@ -183,7 +187,12 @@ const Cadastro = () => {
   };
 
   // 5. Mapa Final
-  const handleFinalConfirm = () => finalizarCadastro(true);
+  const handleFinalConfirm = (enderecoFinal) => {
+    // Se veio um endereço novo do mapa, usamos ele. Se não, usa o tempData (fallback)
+    const enderecoParaSalvar = enderecoFinal || tempData.endereco;
+    setTempData((prev) => ({ ...prev, endereco: enderecoParaSalvar }));
+    finalizarCadastro(true, enderecoParaSalvar);
+  };
   const handleBackToAddress = () => {
     const enderecoSalvo = localStorage.getItem('enderecoUsuarioTemp');
     if (enderecoSalvo && JSON.stringify(tempData.endereco) === enderecoSalvo)
@@ -209,6 +218,7 @@ const Cadastro = () => {
             name="email"
             error={emailError}
             maxLength={255}
+            autocomplete="email"
           />
           <Input
             label="Nome"
@@ -229,6 +239,7 @@ const Cadastro = () => {
             name="senha"
             error={senhaError}
             maxLength={128}
+            autocomplete="new-password"
           />
           <Input
             label="Confirmar senha"
@@ -239,6 +250,7 @@ const Cadastro = () => {
             name="confirmarSenha"
             error={confirmarSenhaError}
             maxLength={128}
+            autocomplete="new-password"
           />
 
           <Button type="submit" variant="primary" className={styles.fullWidth}>

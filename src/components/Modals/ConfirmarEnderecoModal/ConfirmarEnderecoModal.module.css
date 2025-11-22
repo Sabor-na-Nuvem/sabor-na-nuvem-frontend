@@ -86,21 +86,28 @@
   font-size: 0.9rem;
 }
 
-.mapPlaceholder {
+/* Wrapper para o Mapa */
+.mapWrapper {
   width: 100%;
   height: 250px;
-  background-color: #e0efff; /* Azul clarinho simulando mar/fundo mapa */
   border-radius: 12px;
-  border: 2px dashed #a0cfff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: relative;
 }
 
-.pinIcon {
-  font-size: 3rem;
-  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.2));
+/* Placeholder de Loading do Mapa */
+.mapPlaceholderLoading {
+  width: 100%;
+  height: 100%;
+  background-color: #e3f2fd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .fullButton {

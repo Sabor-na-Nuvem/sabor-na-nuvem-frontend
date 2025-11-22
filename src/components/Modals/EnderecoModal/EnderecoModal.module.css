@@ -2,6 +2,10 @@
   max-width: 700px;
 }
 
+.locationButton {
+  width: 100%;
+}
+
 .closeBtnPosition {
   left: 20px;
   right: auto;
@@ -14,15 +18,16 @@
   }
 }
 
-/* --- ANIMAÇÃO DO BOTÃO DE LOCALIZAÇÃO (ACORDEÃO) --- */
 .collapsibleLocation {
   overflow: hidden;
-  padding: 4px;
   max-height: 0;
   opacity: 0;
   margin-bottom: 0;
-  flex-shrink: 0;
   transform: translateY(-10px);
+  padding: 0 4px;
+  margin-left: -4px;
+  margin-right: -4px;
+  flex-shrink: 0;
   transition:
     max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s ease,
@@ -31,22 +36,21 @@
 }
 
 .collapsibleLocation.open {
-  max-height: 60px; /* Altura suficiente para o botão */
+  max-height: 70px;
   opacity: 1;
   margin-bottom: 15px;
   transform: translateY(0);
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
-.locationButton {
-  width: 100%;
-}
-
-/* --- GRID DE FORMULÁRIO --- */
+/* --- GRID E INPUTS --- */
 .formGrid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 15px;
   transition: gap 0.3s ease;
+  flex-shrink: 0;
 }
 
 @media (min-width: 768px) {
@@ -64,10 +68,9 @@
   grid-column: span 1;
 }
 
-/* --- ESTILOS DOS INPUTS (TRANSIÇÕES) --- */
-
-/* Regra base para os inputs dentro do modal */
-.formGrid input {
+/* Transições suaves para os campos */
+.formGrid input,
+.formGrid select {
   transition:
     background-color 0.3s ease,
     border-bottom-color 0.3s ease,
@@ -75,8 +78,9 @@
     padding 0.3s ease;
 }
 
-/* --- MODO DE LEITURA (Visual "Flat") --- */
-.modeReading input {
+/* MODO LEITURA */
+.modeReading input,
+.modeReading select {
   border-bottom: 1px solid transparent !important;
   background-color: transparent !important;
   padding-left: 0 !important;
@@ -90,15 +94,16 @@
   transition: color 0.3s ease;
 }
 
-/* O formulário sobe um pouco quando o botão de localização some */
 .modeReading {
   margin-top: 0;
   transition: margin-top 0.3s ease;
 }
 
-/* --- MODO DE EDIÇÃO (Destaque) --- */
-.modeEditing input {
-  background-color: #fff !important;
+/* MODO EDIÇÃO (CORRIGIDO) */
+/* Removemos o !important e aumentamos a especificidade com .formGrid */
+.modeEditing.formGrid input,
+.modeEditing.formGrid select {
+  background-color: #fff;
 }
 
 .modeEditing label {
@@ -109,14 +114,58 @@
   margin-top: 0;
 }
 
-/* --- FOOTER E ANIMAÇÃO DE BOTÕES --- */
+/* --- ANIMAÇÃO DE AUTOCOMPLETE --- */
+@keyframes flashFill {
+  0% {
+    background-color: rgba(255, 207, 42, 0.3); /* Amarelo suave */
+    border-bottom-color: var(--color-primary);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: #fff; /* Volta para o branco do modo edição */
+    border-bottom-color: var(--color-surface-subtle);
+    transform: scale(1);
+  }
+}
+
+/* Aplica a animação aos inputs/selects dentro da classe autoFilled */
+.autoFilled input,
+.autoFilled select {
+  animation: flashFill 1.5s ease-out forwards;
+  will-change: background-color, transform;
+}
+
+/* Link "Não sei meu CEP" */
+.findCepLink {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 2px;
+}
+
+.findCepLink:hover {
+  color: var(--color-primary-dark, #a34144);
+}
+
+.findCepLink:disabled {
+  color: #999;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* Footer */
 .modalFooterContent {
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-
-  /* Animação suave na troca de conteúdo */
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -135,17 +184,13 @@
   width: 100%;
   max-width: 300px;
 }
-
 .footerActions {
   display: flex;
   gap: 15px;
   width: 100%;
   justify-content: center;
-
-  /* Garante que o container tenha altura fixa ou transicione suavemente */
   animation: fadeIn 0.3s ease-out;
 }
-
 .submitButton {
   flex: 2;
   max-width: 300px;
@@ -155,7 +200,6 @@
     background-color 0.2s ease,
     transform 0.1s ease;
 }
-
 .cancelButton {
   flex: 1;
   max-width: 120px;
@@ -165,7 +209,6 @@
   border-radius: 8px;
   transition: all 0.2s ease;
 }
-
 .cancelButton:hover {
   background-color: #eee;
   color: #333;

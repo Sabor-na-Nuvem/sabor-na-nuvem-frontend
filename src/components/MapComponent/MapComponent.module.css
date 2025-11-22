@@ -1,0 +1,44 @@
+.mapContainer {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden; /* Garante que o mapa respeite o arredondamento */
+  border: 1px solid #e0e0e0;
+  position: relative;
+  z-index: 1; /* Nível baixo para não cobrir modais */
+}
+
+/* Garante que o container interno do React Leaflet ocupe tudo */
+.leafletMap {
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+}
+
+/* --- Customização do Popup do Leaflet --- */
+/* O :global é necessário pois as classes do Leaflet não são CSS Modules */
+
+.customPopup :global(.leaflet-popup-content-wrapper) {
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  padding: 0;
+  overflow: hidden;
+}
+
+.customPopup :global(.leaflet-popup-content) {
+  margin: 12px 16px;
+  font-family: 'Poppins', sans-serif; /* Fonte do seu projeto */
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #555;
+}
+
+.customPopup strong {
+  color: #c25153; /* Sua cor primária */
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.customPopup :global(.leaflet-popup-tip) {
+  background: white;
+}

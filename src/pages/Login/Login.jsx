@@ -112,6 +112,7 @@ const Login = () => {
             name="email"
             error={emailError}
             maxLength={255}
+            autocomplete="email"
           />
 
           <Input
@@ -123,6 +124,7 @@ const Login = () => {
             name="senha"
             error={senhaError}
             maxLength={128}
+            autocomplete="current-password"
           />
 
           {/* Link para Esqueci a Senha */}
