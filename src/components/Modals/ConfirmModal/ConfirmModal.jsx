@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { LuX } from 'react-icons/lu';
 import Button from '../../Button';
 import styles from './ConfirmModal.module.css';
 import shared from '../ModalShared.module.css';
+import ModalWrapper from '../ModalWrapper';
 
 const ConfirmModal = ({
   title,
@@ -12,65 +13,56 @@ const ConfirmModal = ({
   cancelText = 'Cancelar',
   onConfirm,
   onCancel,
-  onClose = undefined,
+  onClose,
   variant = 'primary',
 }) => {
-  const [isClosing, setIsClosing] = useState(false);
-
-  const handleClose = () => setIsClosing(true);
-
-  const handleAnimationEnd = (e) => {
-    if (e.target !== e.currentTarget) return;
-
-    if (isClosing) {
-      if (onClose !== undefined) {
-        onClose();
-      } else {
-        onCancel();
-      }
-      setIsClosing(false);
-    }
-  };
-
-  const handleConfirmAction = () => {
-    onConfirm();
-  };
-
   return (
-    <div
-      className={`${shared.overlay} ${isClosing ? shared.overlayClosing : ''}`}
-      onClick={handleClose}
-      onAnimationEnd={handleAnimationEnd}
-    >
-      <div
-        className={`${shared.modalContainer} ${styles.containerSmall} ${isClosing ? shared.modalContainerClosing : ''}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={shared.modalHeader} style={{ borderBottom: 'none', paddingBottom: 0 }}>
-          <h2 className={shared.modalTitle}>{title}</h2>
-          <button className={shared.closeButton} onClick={handleClose}>
-            <LuX size={24} />
-          </button>
-        </div>
+    <ModalWrapper onClose={onClose || onCancel} containerClassName={styles.containerSmall}>
+      {({ requestClose }) => {
+        const handleAction = (actionFn) => {
+          if (actionFn) actionFn();
+          requestClose(); // Chama animação de saída
+        };
 
-        <div className={shared.modalContent} style={{ textAlign: 'center', paddingTop: 10 }}>
-          <p className={styles.description}>{description}</p>
-        </div>
+        return (
+          <>
+            <div className={shared.modalHeader} style={{ borderBottom: 'none', paddingBottom: 0 }}>
+              <h2 className={shared.modalTitle}>{title}</h2>
 
-        <div className={shared.modalFooter} style={{ borderTop: 'none', paddingTop: 0 }}>
-          <div className={styles.actions}>
-            {cancelText && (
-              <Button variant="outline-red" onClick={onCancel} className={styles.button}>
-                {cancelText}
-              </Button>
-            )}
-            <Button variant={variant} onClick={handleConfirmAction} className={styles.button}>
-              {confirmText}
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+              {/* O botão X deve acionar o cancelamento antes de fechar */}
+              <button className={shared.closeButton} onClick={() => handleAction(onCancel)}>
+                <LuX size={24} />
+              </button>
+            </div>
+
+            <div className={shared.modalContent} style={{ textAlign: 'center', paddingTop: 10 }}>
+              <div className={styles.description}>{description}</div>
+            </div>
+
+            <div className={shared.modalFooter} style={{ borderTop: 'none', paddingTop: 0 }}>
+              <div className={styles.actions}>
+                {cancelText && (
+                  <Button
+                    variant="outline-red"
+                    onClick={() => handleAction(onCancel)}
+                    className={styles.button}
+                  >
+                    {cancelText}
+                  </Button>
+                )}
+                <Button
+                  variant={variant}
+                  onClick={() => handleAction(onConfirm)}
+                  className={styles.button}
+                >
+                  {confirmText}
+                </Button>
+              </div>
+            </div>
+          </>
+        );
+      }}
+    </ModalWrapper>
   );
 };
 

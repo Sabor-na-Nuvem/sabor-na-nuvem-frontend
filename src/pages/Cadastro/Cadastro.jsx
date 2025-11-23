@@ -10,8 +10,8 @@ import ReturnLink from '../../components/ReturnLink';
 // --- IMPORTS DOS MODAIS ---
 import AlertModal from '../../components/Modals/AlertModal';
 import EnderecoModal from '../../components/Modals/EnderecoModal';
-import ConfirmModal from '../../components/Modals/ConfirmModal/ConfirmModal';
-import ContatoModal from '../../components/Modals/ContatoModal/ContatoModal';
+import ConfirmModal from '../../components/Modals/ConfirmModal';
+import ContatoModal from '../../components/Modals/ContatoModal';
 import ConfirmarEnderecoFinalModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoFinalModal';
 import ConfirmarEnderecoExistenteModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoExistenteModal';
 
@@ -30,9 +30,9 @@ const Cadastro = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // --- ESTADOS DO FLUXO DE MODAIS ---
-  // Steps: 'none', 'initial_confirm', 'contact', 'check_storage', 'new_address', 'final_confirm'
   const [modalStep, setModalStep] = useState('none');
   const [tempData, setTempData] = useState({ telefones: null, endereco: null });
+
   const [alertModal, setAlertModal] = useState({
     isOpen: false,
     title: '',
@@ -136,14 +136,17 @@ const Cadastro = () => {
         endereco: enderecoFinal,
       }),
     };
+
+    // Fecha o modal atual
     setModalStep('none');
 
     console.log('Cadastro efetuado com sucesso!', payload);
     // TODO: conectar com a API
     // api.post('/cadastro', payload)...
+
     if (comExtras) localStorage.removeItem('enderecoUsuarioTemp');
 
-    // Aguarda um pequeno delay (300ms) para garantir que o modal antigo sumiu visualmente
+    // Aguarda um pequeno delay para garantir que o modal antigo sumiu visualmente
     setTimeout(() => {
       mostrarAlerta('Cadastro realizado!', 'Realize o login para entrar em sua conta!', 'success');
     }, 300);
@@ -193,8 +196,10 @@ const Cadastro = () => {
     setTempData((prev) => ({ ...prev, endereco: enderecoParaSalvar }));
     finalizarCadastro(true, enderecoParaSalvar);
   };
+
   const handleBackToAddress = () => {
     const enderecoSalvo = localStorage.getItem('enderecoUsuarioTemp');
+    // Se tinha endereço no storage E o usuário não editou manualmente, volta para confirmação
     if (enderecoSalvo && JSON.stringify(tempData.endereco) === enderecoSalvo)
       setModalStep('check_storage');
     else setModalStep('new_address');
@@ -218,7 +223,6 @@ const Cadastro = () => {
             name="email"
             error={emailError}
             maxLength={255}
-            autoComplete="email"
           />
           <Input
             label="Nome"
@@ -239,7 +243,6 @@ const Cadastro = () => {
             name="senha"
             error={senhaError}
             maxLength={128}
-            autoComplete="new-password"
           />
           <Input
             label="Confirmar senha"
@@ -250,7 +253,6 @@ const Cadastro = () => {
             name="confirmarSenha"
             error={confirmarSenhaError}
             maxLength={128}
-            autoComplete="new-password"
           />
 
           <Button type="submit" variant="primary" className={styles.fullWidth}>

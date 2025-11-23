@@ -3,14 +3,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { LuMapPin, LuX, LuPencilLine, LuLoaderCircle } from 'react-icons/lu';
-import { ESTADOS_BRASIL } from '../../../constants/estados';
-import { getStateCode, normalizeText } from '../../../utils/enderecoUtils';
 import Button from '../../Button';
 import Input from '../../Input';
 import Select from '../../Select';
 import styles from './EnderecoModal.module.css';
 import shared from '../ModalShared.module.css';
+import { ESTADOS_BRASIL } from '../../../constants/estados';
 import AlertModal from '../AlertModal/AlertModal';
+import { normalizeText, getStateCode } from '../../../utils/enderecoUtils';
+import ModalWrapper from '../ModalWrapper';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const EnderecoModal = ({
   onClose,
@@ -19,18 +21,19 @@ const EnderecoModal = ({
   initialData = null,
   startEditing = false,
 }) => {
-  const [isClosing, setIsClosing] = useState(false);
+  const { user } = useAuth();
+  // Estados de Lógica de Negócio
   const [isEditing, setIsEditing] = useState(!initialData || startEditing);
-
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isSearchingCep, setIsSearchingCep] = useState(false);
 
-  // Controlam os flashes visuais
-  const [highlightAutoFill, setHighlightAutoFill] = useState(false); // Para campos gerais
-  const [highlightCep, setHighlightCep] = useState(false); // Específico para o CEP
+  // Estados Visuais (Flash)
+  const [highlightAutoFill, setHighlightAutoFill] = useState(false);
+  const [highlightCep, setHighlightCep] = useState(false);
 
+  // Estado do Alerta Interno
   const [alertInfo, setAlertInfo] = useState({
     isOpen: false,
     title: '',
@@ -56,6 +59,7 @@ const EnderecoModal = ({
   const [errors, setErrors] = useState({});
   const [cepDataReference, setCepDataReference] = useState(null);
 
+  // Inicialização dos dados
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -71,28 +75,22 @@ const EnderecoModal = ({
     }
   }, [initialData]);
 
+  // Helpers de UI
   const showAlert = (title, msg, type = 'error') =>
     setAlertInfo({ isOpen: true, title, msg, type });
   const closeAlert = () => setAlertInfo((prev) => ({ ...prev, isOpen: false }));
-  const handleClose = () => setIsClosing(true);
-  const handleToggleEdit = () => setIsEditing(!isEditing);
-
-  const handleAnimationEnd = (e) => {
-    if (e.target !== e.currentTarget) return;
-    if (isClosing) {
-      onClose();
-      setIsClosing(false);
-    }
+  const handleToggleEdit = () => {
+    setIsEditing(!isEditing);
+    if (isUserPage) setFormData(user.endereco);
   };
 
-  // --- 1. BUSCA POR CEP (ViaCEP) ---
+  // --- LÓGICA 1: BUSCA POR CEP ---
   const buscarDadosPorCep = async (cep) => {
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length !== 8) return;
 
     setIsFetchingCep(true);
     setHighlightAutoFill(false);
-
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
       const data = await response.json();
@@ -103,7 +101,6 @@ const EnderecoModal = ({
       }
 
       setCepDataReference(data);
-
       setFormData((prev) => ({
         ...prev,
         logradouro: data.logradouro || prev.logradouro,
@@ -118,10 +115,8 @@ const EnderecoModal = ({
         return newErrors;
       });
 
-      // Ativa animação nos campos de endereço
       setHighlightAutoFill(true);
       setTimeout(() => setHighlightAutoFill(false), 2000);
-
       setTimeout(() => {
         if (numeroInputRef.current) numeroInputRef.current.focus();
       }, 100);
@@ -132,47 +127,31 @@ const EnderecoModal = ({
     }
   };
 
-  // --- 2. BUSCA CEP PELO ENDEREÇO ---
+  // --- LÓGICA 2: BUSCA CEP PELO ENDEREÇO ---
   const encontrarCepPeloEndereco = async () => {
     const { estado, cidade, logradouro } = formData;
-
     if (!estado || !cidade || logradouro.length < 3) {
-      showAlert(
-        'Dados insuficientes',
-        'Preencha Estado, Cidade e pelo menos 3 letras do Logradouro para buscar o CEP.',
-        'primary'
-      );
+      showAlert('Dados insuficientes', 'Preencha Estado, Cidade e Logradouro.', 'primary');
       return;
     }
-
     setIsSearchingCep(true);
     setHighlightCep(false);
-
     try {
       const url = `https://viacep.com.br/ws/${estado}/${encodeURIComponent(cidade)}/${encodeURIComponent(logradouro)}/json/`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data && data.length > 0) {
-        const bestMatch = data[0];
-        setFormData((prev) => ({ ...prev, cep: bestMatch.cep }));
-        setCepDataReference(bestMatch);
-
+      const r = await fetch(url);
+      const d = await r.json();
+      if (d && d.length > 0) {
+        setFormData((prev) => ({ ...prev, cep: d[0].cep }));
+        setCepDataReference(d[0]);
         setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors.cep;
-          return newErrors;
+          const n = { ...prev };
+          delete n.cep;
+          return n;
         });
-
-        // Ativa animação no CEP
         setHighlightCep(true);
         setTimeout(() => setHighlightCep(false), 2000);
       } else {
-        showAlert(
-          'Não encontrado',
-          'Não encontramos um CEP para este endereço. Verifique a grafia.',
-          'error'
-        );
+        showAlert('Não encontrado', 'Verifique os dados.', 'error');
       }
     } catch (error) {
       showAlert('Erro', 'Falha ao buscar CEP.', 'error');
@@ -181,7 +160,7 @@ const EnderecoModal = ({
     }
   };
 
-  // --- 3. GEOLOCALIZAÇÃO ATUAL (GPS + REVERSE GEOCODING) ---
+  // --- LÓGICA 3: GEOLOCALIZAÇÃO ATUAL ---
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
       showAlert('Erro', 'Não suportado.');
@@ -221,8 +200,7 @@ const EnderecoModal = ({
           setIsLocating(false);
         }
       },
-      // eslint-disable-next-line no-unused-vars
-      (e) => {
+      (_e) => {
         setIsLocating(false);
         showAlert('Erro de localização', 'Não foi possível obter sua posição.', 'error');
       },
@@ -230,35 +208,21 @@ const EnderecoModal = ({
     );
   };
 
-  // --- 4. VALIDAÇÃO DE CONSISTÊNCIA ---
+  // --- VALIDAÇÃO E SUBMISSÃO ---
   const checkConsistency = () => {
     if (!cepDataReference) return true;
-    const currentUF = normalizeText(formData.estado);
+    const curUF = normalizeText(formData.estado);
     const cepUF = normalizeText(cepDataReference.uf);
-    const currentCity = normalizeText(formData.cidade);
+    const curCity = normalizeText(formData.cidade);
     const cepCity = normalizeText(cepDataReference.localidade);
-
-    if (currentUF && cepUF && currentUF !== cepUF) {
-      showAlert(
-        'Inconsistência',
-        `O Estado (${formData.estado}) não bate com o CEP (${cepDataReference.uf}).`,
-        'error'
-      );
+    if (curUF && cepUF && curUF !== cepUF) {
+      showAlert('Inconsistência', `O Estado (${formData.estado}) não bate com o CEP.`, 'error');
       return false;
     }
-    if (
-      currentCity &&
-      cepCity &&
-      currentCity !== cepCity &&
-      !currentCity.includes(cepCity) &&
-      !cepCity.includes(currentCity)
-    ) {
-      return false;
-    }
+    if (curCity && cepCity && curCity !== cepCity && !curCity.includes(cepCity)) return false;
     return true;
   };
 
-  // --- 5. GEOCODING DIRETO (Endereço -> Lat/Lng para salvar) ---
   const fetchCoordinates = async (d) => {
     const q = `${d.logradouro}, ${d.numero}, ${d.bairro}, ${d.cidade}, ${d.estado}, Brazil`;
     const u = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`;
@@ -267,37 +231,21 @@ const EnderecoModal = ({
       const j = await r.json();
       if (j.length > 0) return { latitude: j[0].lat, longitude: j[0].lon };
     } catch (e) {
-      // Manter vazio
+      // Deixar vazio
     }
     return null;
   };
 
   const validateForm = () => {
-    const newErrors = {};
-    if (!formData.cep) newErrors.cep = 'Obrigatório';
-    if (!formData.logradouro) newErrors.logradouro = 'Obrigatório';
-    if (!formData.numero) newErrors.numero = 'Obrigatório';
-    if (!formData.bairro) newErrors.bairro = 'Obrigatório';
-    if (!formData.cidade) newErrors.cidade = 'Obrigatório';
-    if (!formData.estado) newErrors.estado = 'Obrigatório';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    if (e) e.preventDefault();
-    if (validateForm()) {
-      if (!checkConsistency()) return;
-      setIsGeocoding(true);
-      try {
-        const c = await fetchCoordinates(formData);
-        onSave({ ...formData, latitude: c ? c.latitude : null, longitude: c ? c.longitude : null });
-      } catch (err) {
-        onSave(formData);
-      } finally {
-        setIsGeocoding(false);
-      }
-    }
+    const n = {};
+    if (!formData.cep) n.cep = 'Obrigatório';
+    if (!formData.logradouro) n.logradouro = 'Obrigatório';
+    if (!formData.numero) n.numero = 'Obrigatório';
+    if (!formData.bairro) n.bairro = 'Obrigatório';
+    if (!formData.cidade) n.cidade = 'Obrigatório';
+    if (!formData.estado) n.estado = 'Obrigatório';
+    setErrors(n);
+    return Object.keys(n).length === 0;
   };
 
   const handleChange = (e) => {
@@ -320,209 +268,240 @@ const EnderecoModal = ({
 
   return (
     <>
-      <div
-        className={`${shared.overlay} ${isClosing ? shared.overlayClosing : ''}`}
-        onClick={handleClose}
-        onAnimationEnd={handleAnimationEnd}
-      >
-        <div
-          className={`${shared.modalContainer} ${styles.containerLarger} ${isClosing ? shared.modalContainerClosing : ''}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className={shared.modalHeader}>
-            <h2 className={shared.modalTitle}>Endereço de entrega</h2>
-            <button
-              className={`${shared.closeButton} ${styles.closeBtnPosition}`}
-              onClick={handleClose}
-            >
-              <LuX size={24} />
-            </button>
-          </div>
+      <ModalWrapper onClose={onClose} containerClassName={styles.containerLarger}>
+        {({ requestClose }) => {
+          const handleSubmit = async (e) => {
+            if (e) e.preventDefault();
+            if (validateForm()) {
+              if (!checkConsistency()) return;
+              setIsGeocoding(true);
+              try {
+                const c = await fetchCoordinates(formData);
+                onSave({
+                  ...formData,
+                  latitude: c ? c.latitude : null,
+                  longitude: c ? c.longitude : null,
+                });
+                // Fecha com animação após salvar com sucesso
+                requestClose();
+              } catch (err) {
+                onSave(formData);
+                requestClose();
+              } finally {
+                setIsGeocoding(false);
+              }
+            }
+          };
 
-          <div className={shared.modalContent}>
-            <div className={`${styles.collapsibleLocation} ${isEditing ? styles.open : ''}`}>
-              <Button
-                variant="outline-yellow"
-                className={styles.locationButton}
-                type="button"
-                onClick={handleGetCurrentLocation}
-                disabled={isLocating}
-              >
-                {isLocating ? (
-                  <>
-                    <LuLoaderCircle className={styles.spinning} style={{ marginRight: 8 }} />
-                    Localizando...
-                  </>
-                ) : (
-                  <>
-                    <LuMapPin size={18} style={{ marginRight: 8 }} /> Usar localização atual
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <form
-              id="address-form"
-              onSubmit={handleSubmit}
-              className={`${styles.formGrid} ${isEditing ? styles.modeEditing : styles.modeReading}`}
-            >
-              {/* CEP com destaque condicional */}
-              <div
-                className={`${styles.spanHalf} ${highlightCep ? styles.autoFilled : ''}`}
-                style={{ position: 'relative' }}
-              >
-                <Input
-                  label="CEP"
-                  name="cep"
-                  value={formData.cep}
-                  onChange={handleChange}
-                  placeholder="00000-000"
-                  disabled={!isEditing}
-                  maxLength={9}
-                  error={errors.cep}
-                  inputMode="numeric"
-                />
-                {isFetchingCep && (
-                  <div style={{ position: 'absolute', right: 10, top: 38, color: '#c25153' }}>
-                    <LuLoaderCircle className={styles.spinning} />
-                  </div>
-                )}
-
-                {isEditing && !isFetchingCep && formData.cep.length < 8 && (
-                  <button
-                    type="button"
-                    onClick={encontrarCepPeloEndereco}
-                    className={styles.findCepLink}
-                    disabled={isSearchingCep}
-                  >
-                    {isSearchingCep ? 'Buscando...' : 'Não sei meu CEP'}
-                  </button>
-                )}
-              </div>
-
-              {/* Demais campos com destaque condicional */}
-              <div className={`${styles.spanHalf} ${highlightAutoFill ? styles.autoFilled : ''}`}>
-                <Select
-                  label="Estado"
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleChange}
-                  options={ESTADOS_BRASIL}
-                  disabled={!isEditing}
-                  error={errors.estado}
-                />
-              </div>
-              <div className={`${styles.spanFull} ${highlightAutoFill ? styles.autoFilled : ''}`}>
-                <Input
-                  label="Cidade"
-                  name="cidade"
-                  value={formData.cidade}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  error={errors.cidade}
-                />
-              </div>
-              <div className={`${styles.spanFull} ${highlightAutoFill ? styles.autoFilled : ''}`}>
-                <Input
-                  label="Bairro"
-                  name="bairro"
-                  value={formData.bairro}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  error={errors.bairro}
-                />
-              </div>
-              <div className={`${styles.spanFull} ${highlightAutoFill ? styles.autoFilled : ''}`}>
-                <Input
-                  label="Logradouro"
-                  name="logradouro"
-                  value={formData.logradouro}
-                  onChange={handleChange}
-                  placeholder="Av., Rua, Travessa..."
-                  disabled={!isEditing}
-                  error={errors.logradouro}
-                />
-              </div>
-              <div className={styles.spanHalf}>
-                <Input
-                  ref={numeroInputRef}
-                  label="Número"
-                  name="numero"
-                  value={formData.numero}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  error={errors.numero}
-                />
-              </div>
-              <div className={styles.spanHalf}>
-                <Input
-                  label="Complemento"
-                  name="complemento"
-                  value={formData.complemento}
-                  onChange={handleChange}
-                  placeholder="Apto, Bloco..."
-                  disabled={!isEditing}
-                />
-              </div>
-              <div className={styles.spanFull}>
-                <Input
-                  label="Ponto de referência"
-                  name="referencia"
-                  value={formData.referencia}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-              </div>
-            </form>
-          </div>
-
-          <div className={shared.modalFooter}>
-            <div className={styles.modalFooterContent}>
-              {isUserPage && !isEditing ? (
-                <Button
-                  type="button"
-                  variant="outline-red"
-                  className={styles.editButton}
-                  onClick={handleToggleEdit}
+          return (
+            <>
+              <div className={shared.modalHeader}>
+                <h2 className={shared.modalTitle}>Endereço de entrega</h2>
+                <button
+                  className={`${shared.closeButton} ${styles.closeBtnPosition}`}
+                  onClick={requestClose}
                 >
-                  <LuPencilLine size={18} style={{ marginRight: 8 }} /> Editar Endereço
-                </Button>
-              ) : (
-                <div className={styles.footerActions}>
-                  {isUserPage && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className={styles.cancelButton}
-                      onClick={handleToggleEdit}
-                    >
-                      Cancelar
-                    </Button>
-                  )}
+                  <LuX size={24} />
+                </button>
+              </div>
+
+              <div className={shared.modalContent}>
+                <div className={`${styles.collapsibleLocation} ${isEditing ? styles.open : ''}`}>
                   <Button
+                    variant="outline-yellow"
+                    className={styles.locationButton}
                     type="button"
-                    onClick={handleSubmit}
-                    variant="primary"
-                    className={styles.submitButton}
-                    disabled={isGeocoding || isFetchingCep || isLocating}
+                    onClick={handleGetCurrentLocation}
+                    disabled={isLocating}
                   >
-                    {isGeocoding ? (
+                    {isLocating ? (
                       <>
-                        <LuLoaderCircle className={styles.spinning} style={{ marginRight: 8 }} />
-                        Buscando...
+                        <LuLoaderCircle className={styles.spinning} style={{ marginRight: 8 }} />{' '}
+                        Localizando...
                       </>
-                    ) : isUserPage ? (
-                      'Salvar Alterações'
                     ) : (
-                      textoBotao
+                      <>
+                        <LuMapPin size={18} style={{ marginRight: 8 }} /> Usar localização atual
+                      </>
                     )}
                   </Button>
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+
+                <form
+                  id="address-form"
+                  onSubmit={handleSubmit}
+                  className={`${styles.formGrid} ${isEditing ? styles.modeEditing : styles.modeReading}`}
+                >
+                  {/* Campo CEP */}
+                  <div
+                    className={`${styles.spanHalf} ${highlightCep ? styles.autoFilled : ''}`}
+                    style={{ position: 'relative' }}
+                  >
+                    <Input
+                      label="CEP"
+                      name="cep"
+                      value={formData.cep}
+                      onChange={handleChange}
+                      placeholder="00000-000"
+                      disabled={!isEditing}
+                      maxLength={9}
+                      error={errors.cep}
+                      inputMode="numeric"
+                    />
+                    {isFetchingCep && (
+                      <div style={{ position: 'absolute', right: 10, top: 38, color: '#c25153' }}>
+                        <LuLoaderCircle className={styles.spinning} />
+                      </div>
+                    )}
+                    {isEditing && !isFetchingCep && formData.cep.length < 8 && (
+                      <button
+                        type="button"
+                        onClick={encontrarCepPeloEndereco}
+                        className={styles.findCepLink}
+                        disabled={isSearchingCep}
+                      >
+                        {isSearchingCep ? 'Buscando...' : 'Não sei meu CEP'}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Outros Campos */}
+                  <div
+                    className={`${styles.spanHalf} ${highlightAutoFill ? styles.autoFilled : ''}`}
+                  >
+                    <Select
+                      label="Estado"
+                      name="estado"
+                      value={formData.estado}
+                      onChange={handleChange}
+                      options={ESTADOS_BRASIL}
+                      disabled={!isEditing}
+                      error={errors.estado}
+                    />
+                  </div>
+                  <div
+                    className={`${styles.spanFull} ${highlightAutoFill ? styles.autoFilled : ''}`}
+                  >
+                    <Input
+                      label="Cidade"
+                      name="cidade"
+                      value={formData.cidade}
+                      onChange={handleChange}
+                      disabled={!isEditing}
+                      error={errors.cidade}
+                    />
+                  </div>
+                  <div
+                    className={`${styles.spanFull} ${highlightAutoFill ? styles.autoFilled : ''}`}
+                  >
+                    <Input
+                      label="Bairro"
+                      name="bairro"
+                      value={formData.bairro}
+                      onChange={handleChange}
+                      disabled={!isEditing}
+                      error={errors.bairro}
+                    />
+                  </div>
+                  <div
+                    className={`${styles.spanFull} ${highlightAutoFill ? styles.autoFilled : ''}`}
+                  >
+                    <Input
+                      label="Logradouro"
+                      name="logradouro"
+                      value={formData.logradouro}
+                      onChange={handleChange}
+                      placeholder="Av., Rua, Travessa..."
+                      disabled={!isEditing}
+                      error={errors.logradouro}
+                    />
+                  </div>
+                  <div className={styles.spanHalf}>
+                    <Input
+                      ref={numeroInputRef}
+                      label="Número"
+                      name="numero"
+                      value={formData.numero}
+                      onChange={handleChange}
+                      disabled={!isEditing}
+                      error={errors.numero}
+                    />
+                  </div>
+                  <div className={styles.spanHalf}>
+                    <Input
+                      label="Complemento"
+                      name="complemento"
+                      value={formData.complemento}
+                      onChange={handleChange}
+                      placeholder="Apto, Bloco..."
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div className={styles.spanFull}>
+                    <Input
+                      label="Ponto de referência"
+                      name="referencia"
+                      value={formData.referencia}
+                      onChange={handleChange}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </form>
+              </div>
+
+              <div className={shared.modalFooter}>
+                <div className={styles.modalFooterContent}>
+                  {isUserPage && !isEditing ? (
+                    <Button
+                      type="button"
+                      variant="outline-red"
+                      className={styles.editButton}
+                      onClick={handleToggleEdit}
+                    >
+                      <LuPencilLine size={18} style={{ marginRight: 8 }} /> Editar Endereço
+                    </Button>
+                  ) : (
+                    <div className={styles.footerActions}>
+                      {isUserPage && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className={styles.cancelButton}
+                          onClick={handleToggleEdit}
+                        >
+                          Cancelar
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        onClick={handleSubmit}
+                        variant="primary"
+                        className={styles.submitButton}
+                        disabled={isGeocoding || isFetchingCep || isLocating}
+                      >
+                        {isGeocoding ? (
+                          <>
+                            <LuLoaderCircle
+                              className={styles.spinning}
+                              style={{ marginRight: 8 }}
+                            />
+                            Buscando...
+                          </>
+                        ) : isUserPage ? (
+                          'Salvar Alterações'
+                        ) : (
+                          textoBotao
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          );
+        }}
+      </ModalWrapper>
+
       {alertInfo.isOpen && (
         <AlertModal
           title={alertInfo.title}
@@ -538,7 +517,7 @@ const EnderecoModal = ({
 
 EnderecoModal.propTypes = {
   onClose: PropTypes.func.isRequired,
-  onSave: PropTypes.func,
+  onSave: PropTypes.func.isRequired,
   textoBotao: PropTypes.string,
   initialData: PropTypes.object,
   startEditing: PropTypes.bool,
