@@ -9,7 +9,9 @@ import Input from '../../components/Input';
 import InputCelular from '../../components/InputCelular';
 import EnderecoModal from '../../components/Modals/EnderecoModal';
 import AlertModal from '../../components/Modals/AlertModal';
+import ConfirmModal from '../../components/Modals/ConfirmModal';
 import { useAuth } from '../../contexts/AuthContext';
+import ConfirmarEnderecoFinalModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoFinalModal';
 
 // --- COMPONENTE AUXILIAR (EditableRow) ---
 const EditableRow = ({
@@ -101,13 +103,14 @@ EditableRow.propTypes = {
 
 // --- COMPONENTE PRINCIPAL ---
 const UserInfo = () => {
-  const { user, loading, updateUser } = useAuth();
+  const { user, loading, updateUser, logout } = useAuth();
 
   // Estados dos campos de usuário
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [celular, setCelular] = useState('');
   const [celularReserva, setCelularReserva] = useState('');
+  const [endereco, setEndereco] = useState({});
 
   const [savingFields, setSavingFields] = useState({});
   const [errors, setErrors] = useState({});
@@ -118,8 +121,13 @@ const UserInfo = () => {
     celularReserva: true,
   });
 
+  // Estado para controlar os modais de Endereco
   const [enderecoModalIsOpen, setEnderecoModalIsOpen] = useState(false);
+  const [confirmarEnderecoModalIsOpen, setConfirmarEnderecoModalIsOpen] = useState(false);
+  const [startEnderecoEditing, setStartEnderecoEditing] = useState(false);
 
+  // Estado para controlar o ConfirmModal
+  const [confirmModalIsOpen, setConfirmModalIsOpen] = useState(false);
   // Estado para controlar o AlertModal
   const [alertInfo, setAlertInfo] = useState({
     isOpen: false,
@@ -128,13 +136,48 @@ const UserInfo = () => {
     type: 'primary', // 'primary', 'success', 'error'
   });
 
-  // Helper para mostrar alerta facilmente
+  // --- Handlers do ConfirmModal ---
+  const showConfirm = () => {
+    setConfirmModalIsOpen(true);
+  };
+
+  const closeConfirm = () => {
+    setConfirmModalIsOpen(false);
+  };
+
+  // --- Handlers do AlertModal ---
   const showAlert = (title, msg, type = 'primary') => {
     setAlertInfo({ isOpen: true, title, msg, type });
   };
 
   const closeAlert = () => {
     setAlertInfo((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  // --- Handlers do EnderecoModal ---
+  const showEnderecoModal = () => {
+    if (confirmarEnderecoModalIsOpen) {
+      setStartEnderecoEditing(true);
+      setConfirmarEnderecoModalIsOpen(false);
+      setTimeout(() => {
+        setEnderecoModalIsOpen(true);
+      }, 400);
+    } else {
+      setEnderecoModalIsOpen(true);
+    }
+  };
+
+  const closeEnderecoModal = () => {
+    setEnderecoModalIsOpen(false);
+    setStartEnderecoEditing(false);
+  };
+
+  // --- Handler do ConfirmarEnderecoModal ---
+  const showConfirmarEndereco = (dadosNovos) => {
+    setEndereco(dadosNovos);
+    setTimeout(() => {
+      setConfirmarEnderecoModalIsOpen(true);
+    }, 400);
   };
 
   // Carrega dados iniciais
@@ -149,6 +192,9 @@ const UserInfo = () => {
           const tel2 = user.telefones[1];
           setCelularReserva(tel2 ? `(${tel2.ddd}) ${tel2.numero}` : '');
         }
+      }
+      if (user.endereco) {
+        setEndereco(user.endereco);
       }
     }
   }, [user]);
@@ -226,6 +272,7 @@ const UserInfo = () => {
     setSavingFields((prev) => ({ ...prev, [fieldName]: true }));
 
     try {
+      // TODO: conectar com a API
       await updateUser({ [fieldName]: valueToSave });
       setDisabledFields((prev) => ({ ...prev, [fieldName]: true }));
 
@@ -246,24 +293,27 @@ const UserInfo = () => {
     if (name === 'celularReserva') setCelularReserva(value);
   };
 
-  // --- Handlers do Modal ---
-  const handleOpenEndereco = () => {
-    setEnderecoModalIsOpen(true);
-  };
-
-  const handleCloseEndereco = () => {
-    setEnderecoModalIsOpen(false);
-  };
-
-  // --- FUNÇÃO DE SALVAR ENDEREÇO ---
   const handleAtualizaEndereco = async (dadosEndereco) => {
     try {
+      // TODO: conectar com a API
       await updateUser({ endereco: dadosEndereco });
-      setEnderecoModalIsOpen(false);
+      setConfirmarEnderecoModalIsOpen(false);
+      setStartEnderecoEditing(false);
 
       showAlert('Sucesso!', 'Endereço atualizado com sucesso!', 'success');
     } catch (error) {
       showAlert('Erro', 'Não foi possível atualizar o endereço. Tente novamente.', 'error');
+    }
+  };
+
+  const handleDeletarUsuario = () => {
+    try {
+      // TODO: conectar com a API
+      // TODO: Talvez mandar um email confirmando e/ou pedir a senha para excluir?
+      setConfirmarEnderecoModalIsOpen(false);
+      logout();
+    } catch (error) {
+      showAlert('Erro', 'Não foi possível excluir a conta. Tente novamente.', 'error');
     }
   };
 
@@ -346,7 +396,7 @@ const UserInfo = () => {
               <Button
                 variant="outline-yellow"
                 className={styles.botaoEndereco}
-                onClick={handleOpenEndereco}
+                onClick={showEnderecoModal}
               >
                 Ver endereço
               </Button>
@@ -355,7 +405,7 @@ const UserInfo = () => {
         </div>
 
         <div className={styles.buttonBlock}>
-          <Button variant="primary" className={styles.botaoExcluir}>
+          <Button variant="primary" className={styles.botaoExcluir} onClick={showConfirm}>
             Excluir conta
           </Button>
         </div>
@@ -364,13 +414,41 @@ const UserInfo = () => {
       {/* RENDERIZAÇÃO DOS MODAIS */}
       {enderecoModalIsOpen && (
         <EnderecoModal
-          onClose={handleCloseEndereco}
-          onSave={handleAtualizaEndereco}
-          initialData={user?.endereco}
+          onClose={closeEnderecoModal}
+          onSave={showConfirmarEndereco}
+          initialData={endereco}
+          startEditing={startEnderecoEditing}
         />
       )}
 
-      {/* 5. Renderização do AlertModal */}
+      {confirmarEnderecoModalIsOpen && (
+        <ConfirmarEnderecoFinalModal
+          endereco={endereco}
+          onBack={showEnderecoModal}
+          onConfirm={handleAtualizaEndereco}
+        />
+      )}
+
+      {confirmModalIsOpen && (
+        <ConfirmModal
+          title="CUIDADO!"
+          description={
+            <>
+              <strong>Deseja mesmo excluir sua conta?</strong>
+              <br />
+              <br />
+              <strong>Essa ação é irreversível.</strong>
+            </>
+          }
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          variant="primary"
+          onConfirm={handleDeletarUsuario}
+          onCancel={closeConfirm}
+          onClose={closeConfirm}
+        />
+      )}
+
       {alertInfo.isOpen && (
         <AlertModal
           title={alertInfo.title}
