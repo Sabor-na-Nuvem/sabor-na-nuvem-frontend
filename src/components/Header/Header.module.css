@@ -25,11 +25,11 @@
 }
 
 .brandNameText {
-  display: none; 
+  display: none;
   margin-left: 0.5rem;
   font-size: 1.2rem;
   font-weight: bold;
-  color: var(--text-heading); 
+  color: var(--text-heading);
 }
 
 .desktopNav {
@@ -43,38 +43,6 @@
   cursor: pointer;
   font-size: 1.5rem;
   color: var(--text-heading);
-}
-
-/* --- Menu Lateral (Drawer) Mobile --- */
-
-.mobileNav {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 100%; /* Ocupa 100% da largura, ou 80% se preferir uma barra */
-  height: 100vh;
-  background-color: var(--bg-surface);
-  box-shadow: -4px 0 10px var(--color-surface-subtle);
-  padding: 2rem;
-  padding-top: 5rem;
-  transform: translateX(100%);
-  transition: transform 0.3s ease-out;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  z-index: 99;
-}
-
-.mobileNav.open {
-  transform: translateX(0); /* Mostra o menu */
-}
-
-.navLink {
-  color: var(--text-heading);
-  text-decoration: none;
-  font-size: 1.1rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--color-surface-subtle);
 }
 
 .navButton {
@@ -95,8 +63,56 @@
 .logoImage {
   display: block;
   max-width: 100%;
-  height: 35px; 
-  object-fit: contain; 
+  height: 35px;
+  object-fit: contain;
+}
+
+/* MOBILE MENU DROPDOWN */
+.mobileMenu {
+  position: absolute;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.mobileMenu.open {
+  max-height: 400px; /* Altura suficiente para os itens */
+  padding: 10px 0;
+}
+
+.mobileMenu a,
+.mobileLogout {
+  padding: 15px 20px;
+  text-decoration: none;
+  color: var(--text-heading);
+  font-weight: 500;
+  border-bottom: 1px solid #f9f9f9;
+  display: flex;
+  align-items: center;
+}
+
+.mobileLogout {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.mobileMenu a:hover,
+.mobileLogout:hover {
+  background-color: #f9f9f9;
 }
 
 /* --- Desktop (Breakpoint) --- */
@@ -122,6 +138,6 @@
   }
 
   .logoImage {
-    height: 40px; 
+    height: 40px;
   }
 }

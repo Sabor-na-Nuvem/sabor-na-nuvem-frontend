@@ -1,143 +1,208 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { TiShoppingCart } from 'react-icons/ti';
-import { FaRegUserCircle } from 'react-icons/fa';
-import { MdLogout } from 'react-icons/md';
+import { LuMenu, LuShoppingCart, LuUser, LuLogOut, LuX } from 'react-icons/lu';
 import Button from '../Button';
 import styles from './Header.module.css';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
+import AlertModal from '../Modals/AlertModal';
+import ConfirmModal from '../Modals/ConfirmModal';
 import { useCarrinho } from '../../contexts/CarrinhoContext';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Header = () => {
   const { user, logout } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const { valorTotalFormatado } = useCarrinho();
 
-  return (
-    <header className={styles.header}>
-      <div className={styles.container}>
-        {/* LOGO */}
-        <Link to="/" className={styles.logo}>
-          <img src={logoImg} alt="Sabor na Nuvem Logo" className={styles.logoImage} />
-          <span className={styles.brandNameText}>Sabor na Nuvem</span>
-        </Link>
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
+  const [alertInfo, setAlertInfo] = useState({
+    isOpen: false,
+    title: '',
+    msg: '',
+    type: 'success',
+  });
 
-        {/* NAVEGAÇÃO DESKTOP (Mostrada apenas em telas grandes) */}
-        <div className={styles.desktopNav}>
-          {/* Botão de Carrinho (Se não estiver logado ou for CLIENTE) */}
-          {(!user || user.cargo === 'CLIENTE') && (
-            <>
-              <Link to="/carrinho">
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  // --- LÓGICA DE LOGOUT ---
+
+  // Pede confirmação
+  const handleLogoutClick = () => {
+    setConfirmLogoutOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  // Executa Logout e Mostra Sucesso
+  const confirmLogout = () => {
+    setConfirmLogoutOpen(false);
+    // Salva uma "Flash Message" no storage para a próxima tela ler
+    localStorage.setItem('logout_feedback', 'true');
+    // Fazer o logout
+    logout();
+
+    // Caso não ocorra o redirecionamento durante o logout:
+    // 1. Mostrar feedback visual
+    setAlertInfo({
+      isOpen: true,
+      title: 'Até logo!',
+      msg: 'Você saiu da sua conta com sucesso.',
+      type: 'success',
+    });
+    // 2. Deletar a "Flash Message"
+    setTimeout(() => {
+      localStorage.removeItem('logout_feedback');
+    }, 500);
+  };
+
+  // Fecha Alerta e Redireciona
+  const closeAlert = () => {
+    setAlertInfo((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  return (
+    <>
+      <header className={styles.header}>
+        <div className={styles.container}>
+          {/* LOGO */}
+          <Link to="/" className={styles.logo}>
+            <img src={logoImg} alt="Sabor na Nuvem Logo" className={styles.logoImage} />
+            <span className={styles.brandNameText}>Sabor na Nuvem</span>
+          </Link>
+
+          {/* NAVEGAÇÃO DESKTOP */}
+          <div className={styles.desktopNav}>
+            {/* Botão de Carrinho (Se não estiver logado ou for CLIENTE) */}
+            {(!user || user.cargo === 'CLIENTE') && (
+              <>
+                <Link to="/carrinho">
+                  <Button
+                    variant="no-outline"
+                    icon={<LuShoppingCart size={20} />}
+                    className={styles.navButton}
+                  >
+                    {valorTotalFormatado}
+                  </Button>
+                </Link>
+                <Link to="/cardapio">
+                  <Button variant="outline-red" className={styles.navButton}>
+                    Cardápio
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {user ? (
+              <>
+                {/* Se for ADMIN */}
+                {user.cargo === 'ADMIN' && (
+                  <Link to="/admin">
+                    <Button variant="outline-red" className={styles.navButton}>
+                      Painel Admin
+                    </Button>
+                  </Link>
+                )}
+
+                {/* Se for FUNCIONARIO */}
+                {user.cargo === 'FUNCIONARIO' && (
+                  <Link to="/portal">
+                    <Button variant="outline-red" className={styles.navButton}>
+                      Área da Loja
+                    </Button>
+                  </Link>
+                )}
+
+                {/* Se for CLIENTE */}
+                {user.cargo === 'CLIENTE' && (
+                  <Link to="/minha-conta">
+                    <Button variant="primary" icon={<LuUser />} className={styles.navButton}>
+                      Meu Perfil
+                    </Button>
+                  </Link>
+                )}
+
                 <Button
                   variant="no-outline"
-                  icon={<TiShoppingCart size={20} />}
-                  className={styles.navButton}
-                >
-                  {valorTotalFormatado}
+                  onClick={handleLogoutClick}
+                  icon={<LuLogOut size={14} className={styles.navButton} />}
+                  className={`${styles.navButton} ${styles.logout}`}
+                />
+              </>
+            ) : (
+              <Link to="/login">
+                <Button variant="primary" className={styles.navButton}>
+                  Entrar
                 </Button>
               </Link>
-              <Link to="/cardapio">
-                <Button variant="outline-red" className={styles.navButton}>
-                  Cardápio
-                </Button>
-              </Link>
-            </>
-          )}
+            )}
+          </div>
+
+          {/* MENU HAMBURGER (Mobile) */}
+          <button className={styles.menuToggle} onClick={toggleMenu}>
+            {isMenuOpen ? <LuX size={24} /> : <LuMenu size={24} />}
+          </button>
+        </div>
+
+        {/* NAV MOBILE (Dropdown) */}
+        <nav className={`${styles.mobileMenu} ${isMenuOpen ? styles.open : ''}`}>
+          <Link to="/" onClick={toggleMenu}>
+            Início
+          </Link>
+          <Link to="/cardapio" onClick={toggleMenu}>
+            Cardápio
+          </Link>
 
           {user ? (
             <>
-              {/* Se for ADMIN */}
-              {user.cargo === 'ADMIN' && (
-                <Link to="/admin">
-                  <Button variant="outline-red" className={styles.navButton}>
-                    Painel Admin
-                  </Button>
-                </Link>
-              )}
-
-              {/* Se for FUNCIONARIO */}
-              {user.cargo === 'FUNCIONARIO' && (
-                <Link to="/portal">
-                  <Button variant="outline-red" className={styles.navButton}>
-                    Área da Loja
-                  </Button>
-                </Link>
-              )}
-
-              {/* Se for CLIENTE */}
-              {user.cargo === 'CLIENTE' && (
-                <Link to="/minha-conta">
-                  <Button variant="primary" icon={<FaRegUserCircle />} className={styles.navButton}>
-                    Meu Perfil
-                  </Button>
-                </Link>
-              )}
-
-              <Button
-                variant="no-outline"
-                onClick={logout}
-                icon={<MdLogout size={14} className={styles.navButton} />}
-                className={`${styles.navButton} ${styles.logout}`}
-              />
+              <Link to="/minha-conta/historico-pedidos" onClick={toggleMenu}>
+                Meus Pedidos
+              </Link>
+              <Link to="/minha-conta" onClick={toggleMenu}>
+                Minha Conta
+              </Link>
+              <button onClick={handleLogoutClick} className={styles.mobileLogout}>
+                <LuLogOut size={18} style={{ marginRight: 8 }} /> Sair
+              </button>
             </>
           ) : (
-            <Link to="/login">
-              <Button variant="primary" className={styles.navButton}>
+            <>
+              <Link to="/login" onClick={toggleMenu}>
                 Entrar
-              </Button>
-            </Link>
+              </Link>
+              <Link to="/cadastro" onClick={toggleMenu}>
+                Cadastrar
+              </Link>
+            </>
           )}
-        </div>
+        </nav>
+      </header>
 
-        {/* TOGGLE MOBILE (Ícone Hambúrguer) */}
-        <button
-          className={styles.menuToggle}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-expanded={isMenuOpen}
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? '✕' : '☰'}
-        </button>
-      </div>
+      {/* --- MODAIS --- */}
 
-      {/* MENU LATERAL MOBILE (Aparece ao abrir) */}
-      <nav className={`${styles.mobileNav} ${isMenuOpen ? styles.open : ''}`}>
-        <Link to="/" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
-          Home
-        </Link>
-        <Link to="/cardapio" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
-          Cardápio
-        </Link>
-        <Link to="/quem-somos" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>
-          Quem Somos
-        </Link>
-
-        {/* Botão de Entrar no final do menu mobile */}
-        <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-          <Button variant="primary" style={{ width: '100%', marginTop: '1rem' }}>
-            Entrar
-          </Button>
-        </Link>
-      </nav>
-
-      {/* Overlay para fechar ao clicar fora do menu */}
-      {isMenuOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
-            zIndex: 98,
-          }}
-          onClick={() => setIsMenuOpen(false)}
-        ></div>
+      {/* Confirmação de Logout */}
+      {confirmLogoutOpen && (
+        <ConfirmModal
+          title="Sair da conta"
+          description="Tem certeza que deseja sair? Você precisará fazer login novamente para aproveitar todas as funcionalidades."
+          confirmText="Sair"
+          cancelText="Cancelar"
+          variant="primary" // Botão vermelho para ação de saída
+          onConfirm={confirmLogout}
+          onCancel={() => {}}
+          onClose={() => setConfirmLogoutOpen(false)}
+        />
       )}
-    </header>
+
+      {/* Alerta de Sucesso */}
+      {alertInfo.isOpen && (
+        <AlertModal
+          title={alertInfo.title}
+          description={alertInfo.msg}
+          variant="outline-success"
+          icon="success"
+          onClose={closeAlert}
+        />
+      )}
+    </>
   );
 };
 

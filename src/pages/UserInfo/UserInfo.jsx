@@ -309,8 +309,8 @@ const UserInfo = () => {
   const handleDeletarUsuario = () => {
     try {
       // TODO: conectar com a API
-      // TODO: Talvez mandar um email confirmando e/ou pedir a senha para excluir?
-      setConfirmarEnderecoModalIsOpen(false);
+      // Salva uma "Flash Message" no storage para a próxima tela ler
+      localStorage.setItem('delete_feedback', 'true');
       logout();
     } catch (error) {
       showAlert('Erro', 'Não foi possível excluir a conta. Tente novamente.', 'error');
@@ -444,8 +444,9 @@ const UserInfo = () => {
           cancelText="Cancelar"
           variant="primary"
           onConfirm={handleDeletarUsuario}
-          onCancel={closeConfirm}
+          onCancel={() => {}}
           onClose={closeConfirm}
+          inputPassword
         />
       )}
 

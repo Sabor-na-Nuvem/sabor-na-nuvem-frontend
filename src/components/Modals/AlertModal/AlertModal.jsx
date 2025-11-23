@@ -36,7 +36,7 @@ const AlertModal = ({
             <div className={styles.description}>{description}</div>
           </div>
 
-          <div className={shared.modalFooter} style={{ borderTop: 'none', paddingTop: 0 }}>
+          <div className={shared.modalFooter} style={{ borderTop: 'none', paddingTop: 20 }}>
             <div className={styles.actions}>
               <Button variant={variant} onClick={requestClose} className={styles.button}>
                 {buttonText}

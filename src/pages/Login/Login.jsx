@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 import googleLogo from '../../assets/google-logo.png';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import AlertModal from '../../components/Modals/AlertModal';
 import ReturnLink from '../../components/ReturnLink';
 import { useAuth } from '../../contexts/AuthContext';
 import styles from './Login.module.css';
@@ -16,7 +17,42 @@ const Login = () => {
   const [senha, setSenha] = useState('');
   const [emailError, setEmailError] = useState(null);
   const [senhaError, setSenhaError] = useState(null);
+
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [alertInfo, setAlertInfo] = useState({
+    isOpen: false,
+    title: '',
+    msg: '',
+    type: 'success',
+  });
+
+  // Efeito para verificar Logout
+  useEffect(() => {
+    const logoutFeedback = localStorage.getItem('logout_feedback');
+    const deleteFeedback = localStorage.getItem('delete_feedback');
+    if (logoutFeedback) {
+      setAlertInfo({
+        isOpen: true,
+        title: 'Até logo!',
+        msg: 'Você saiu da sua conta com sucesso.',
+        type: 'success',
+      });
+      localStorage.removeItem('logout_feedback');
+    } else if (deleteFeedback) {
+      setAlertInfo({
+        isOpen: true,
+        title: 'Que pena ver você partir...',
+        msg: 'Sua conta foi excluída com sucesso. Esperamos te ver por aqui novamente em breve para novos pedidos!',
+        type: 'primary',
+      });
+      localStorage.removeItem('delete_feedback');
+    }
+  }, []);
+
+  // Fecha Alerta e Redireciona
+  const closeAlert = () => {
+    setAlertInfo((prev) => ({ ...prev, isOpen: false }));
+  };
 
   const validarCampo = (name, value) => {
     let error = null;
@@ -164,6 +200,17 @@ const Login = () => {
           </Link>
         </p>
       </div>
+
+      {/* Alerta de Sucesso */}
+      {alertInfo.isOpen && (
+        <AlertModal
+          title={alertInfo.title}
+          description={alertInfo.msg}
+          variant={alertInfo.type === 'success' ? 'outline-success' : 'outline-yellow'}
+          icon="success"
+          onClose={closeAlert}
+        />
+      )}
     </div>
   );
 };

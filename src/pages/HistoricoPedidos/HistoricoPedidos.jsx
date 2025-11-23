@@ -289,7 +289,8 @@ const HistoricoPedidos = () => {
           cancelText="Voltar"
           variant="primary" // Botão vermelho de perigo
           onConfirm={finalizarCancelamento}
-          onCancel={abortarCancelamento}
+          onCancel={() => {}}
+          onClose={abortarCancelamento}
         />
       )}
 
