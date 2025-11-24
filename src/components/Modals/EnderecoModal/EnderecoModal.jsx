@@ -440,7 +440,7 @@ const EnderecoModal = ({
                   <div className={styles.spanFull}>
                     <Input
                       label="Ponto de referência"
-                      name="referencia"
+                      name="pontoReferencia"
                       value={formData.pontoReferencia}
                       onChange={handleChange}
                       disabled={!isEditing}

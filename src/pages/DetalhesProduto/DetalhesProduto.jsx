@@ -69,19 +69,22 @@ const DetalhesProduto = () => {
     setAlertInfo((prev) => ({ ...prev, isOpen: false }));
   };
 
-  const handleAdicionarAoCarrinho = () => {
+  // --- Lógica de carrinho ---
+  const handleAdicionarAoCarrinho = async () => {
     if (!produto) return;
 
+    // 1. Monta a lista de modificadores no formato esperado pelo Contexto/Backend
     const modificadoresParaCarrinho = [];
+
     Object.values(modificadoresSelecionadosUI).forEach((selectedValue) => {
       const addModToArray = (modId) => {
-        // Usa a função utilitária para buscar dados
         const modData = getModificadorData(modId);
         if (modData) {
           modificadoresParaCarrinho.push({
             modificadorId: modData.id,
             nomeModificador: modData.nome,
             valorAdicionalCobrado: modData.precoAdicional || 0,
+            modificador: modData,
           });
         }
       };
@@ -93,24 +96,43 @@ const DetalhesProduto = () => {
       }
     });
 
+    // 2. Monta o objeto do Item
+    const lojaId = produto.lojaId || 1;
+
     const itemParaCarrinho = {
       produtoId: produto.id,
+      lojaId,
       nomeProduto: produto.nome,
       descricaoProduto: produto.descricao,
       imagemUrl: produto.imagemUrl,
       valorUnitarioProduto: produto.preco,
       qtdProduto,
       modificadoresSelecionados: modificadoresParaCarrinho,
+      produto,
+      loja: { id: lojaId, nome: 'Sabor na Nuvem - Centro' },
     };
 
-    adicionarItem(itemParaCarrinho);
+    try {
+      // 3. Chama o adicionarItem
+      await adicionarItem(itemParaCarrinho);
 
-    setAlertInfo({
-      isOpen: true,
-      title: 'Adicionado!',
-      msg: `${qtdProduto}x ${produto.nome} foi adicionado ao seu carrinho com sucesso.`,
-      type: 'success',
-    });
+      setAlertInfo({
+        isOpen: true,
+        title: 'Adicionado!',
+        msg: `${qtdProduto}x ${produto.nome} foi adicionado ao seu carrinho com sucesso.`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar:', error);
+      const msg = error.message || 'Erro ao adicionar ao carrinho.';
+
+      setAlertInfo({
+        isOpen: true,
+        title: 'Atenção',
+        msg,
+        type: 'error',
+      });
+    }
   };
 
   if (!produto) {

@@ -13,22 +13,20 @@ export const AuthProvider = ({ children }) => {
   // --- Busca os dados completos do usuário (Perfil, Telefones, Endereço) ---
   const fetchUserData = async () => {
     try {
-      const [userRes, telefonesRes, enderecoRes] = await Promise.allSettled([
-        api.get('/usuarios/me'),
-        api.get('/usuarios/me/telefones'),
-        api.get('/usuarios/me/endereco'),
+      // 1. Busca os dados do usuário
+      const userRes = await api.get('/usuarios/me');
+      const userData = userRes.data;
+      const userId = userData.id;
+
+      // 2. Busca os dados complementares
+      const [telefonesRes, enderecoRes] = await Promise.allSettled([
+        api.get(`/usuarios/${userId}/telefones`),
+        api.get(`/usuarios/${userId}/endereco`),
       ]);
 
-      // 1. Dados do Usuário (Obrigatório)
-      if (userRes.status === 'rejected') {
-        throw new Error('Falha ao buscar dados do usuário');
-      }
-      const userData = userRes.value.data;
-
-      // 2. Telefones (Opcional)
+      // 3. Telefones (Opcional)
       const telefones = telefonesRes.status === 'fulfilled' ? telefonesRes.value.data : [];
-
-      // 3. Endereço (Opcional)
+      // 4. Endereço (Opcional)
       const endereco = enderecoRes.status === 'fulfilled' ? enderecoRes.value.data : null;
 
       // Monta o objeto completo de usuário
