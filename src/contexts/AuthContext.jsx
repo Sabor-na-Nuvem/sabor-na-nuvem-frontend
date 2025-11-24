@@ -81,6 +81,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // --- Atualiza os dados do usuário no context ---
+  const refreshUser = async () => {
+    try {
+      const freshUser = await fetchUserData();
+      setUser(freshUser);
+    } catch (error) {
+      console.error('Erro ao recarregar usuário:', error);
+    }
+  };
+
   // --- Realiza o logout do usuário ---
   const logout = async () => {
     try {
@@ -134,6 +144,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         updateUser,
+        refreshUser,
         logout,
         temCargo,
       }}

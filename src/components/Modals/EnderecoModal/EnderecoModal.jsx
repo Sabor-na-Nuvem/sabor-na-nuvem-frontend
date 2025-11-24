@@ -431,9 +431,9 @@ const EnderecoModal = ({
                     <Input
                       label="Complemento"
                       name="complemento"
-                      value={formData.complemento}
+                      value={formData.complemento || ''}
                       onChange={handleChange}
-                      placeholder="Apto, Bloco..."
+                      placeholder={isEditing ? 'Apto, Bloco...' : ''}
                       disabled={!isEditing}
                     />
                   </div>
@@ -441,7 +441,7 @@ const EnderecoModal = ({
                     <Input
                       label="Ponto de referência"
                       name="pontoReferencia"
-                      value={formData.pontoReferencia}
+                      value={formData.pontoReferencia || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
                     />

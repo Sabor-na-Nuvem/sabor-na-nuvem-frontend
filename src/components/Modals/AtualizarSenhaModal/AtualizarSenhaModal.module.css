@@ -1,0 +1,22 @@
+.containerSmall {
+  max-width: 450px;
+}
+
+.description {
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  justify-content: center;
+}
+
+.button {
+  flex: 1;
+  max-width: 180px;
+}
