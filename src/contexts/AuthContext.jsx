@@ -1,170 +1,100 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
+import api from '../services/api';
 
 export const AuthContext = createContext();
 
-const STORAGE_KEY = '@SaborNaNuvem:user';
-const TOKEN_KEY = '@SaborNaNuvem:token';
+const TOKEN_KEY = 'accessToken';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Recuperação de sessão ao carregar a página
-  useEffect(() => {
-    const recoverUser = async () => {
-      const storedUser = localStorage.getItem(STORAGE_KEY);
-      const storedToken = localStorage.getItem(TOKEN_KEY);
+  // --- Busca os dados completos do usuário (Perfil, Telefones, Endereço) ---
+  const fetchUserData = async () => {
+    try {
+      const [userRes, telefonesRes, enderecoRes] = await Promise.allSettled([
+        api.get('/usuarios/me'),
+        api.get('/usuarios/me/telefones'),
+        api.get('/usuarios/me/endereco'),
+      ]);
 
-      if (storedUser && storedToken) {
-        setUser(JSON.parse(storedUser));
-        // Aqui futuramente você pode validar se o token ainda é válido
-        // api.defaults.headers.Authorization = `Bearer ${storedToken}`;
+      // 1. Dados do Usuário (Obrigatório)
+      if (userRes.status === 'rejected') {
+        throw new Error('Falha ao buscar dados do usuário');
       }
-      setLoading(false);
-    };
+      const userData = userRes.value.data;
 
-    recoverUser();
-  }, []);
+      // 2. Telefones (Opcional)
+      const telefones = telefonesRes.status === 'fulfilled' ? telefonesRes.value.data : [];
 
-  // eslint-disable-next-line no-unused-vars
-  const login = async (email, password) => {
+      // 3. Endereço (Opcional)
+      const endereco = enderecoRes.status === 'fulfilled' ? enderecoRes.value.data : null;
+
+      // Monta o objeto completo de usuário
+      const fullUser = {
+        ...userData,
+        telefones,
+        endereco,
+      };
+
+      return fullUser;
+    } catch (error) {
+      console.error('Erro ao montar dados do usuário:', error);
+      throw error;
+    }
+  };
+
+  // --- Realiza o login do usuário ---
+  const login = async (email, senha) => {
     setLoading(true);
 
     try {
-      // --- PASSO 1: AUTENTICAÇÃO (POST /login) ---
-      // const response = await api.post('/login', { email, password });
-      // const { token, userId } = response.data;
+      const response = await api.post('/auth/login', { email, senha });
+      const { accessToken } = response.data;
 
-      // SIMULAÇÃO DA RESPOSTA DO LOGIN
-      const mockLoginResponse = await new Promise((resolve) => {
-        setTimeout(() => {
-          let cargo = 'CLIENTE';
-          if (email.includes('admin')) cargo = 'ADMIN';
-          if (email.includes('func')) cargo = 'FUNCIONARIO';
-
-          resolve({
-            token: 'token-falso-jwt-123456',
-            userId: 'uuid-usuario-123',
-            cargo,
-          });
-        }, 500); // Pequeno delay do login
-      });
-
-      const { token, cargo } = mockLoginResponse;
-
-      localStorage.setItem(TOKEN_KEY, token);
-      // api.defaults.headers.Authorization = `Bearer ${token}`;
-
-      // --- PASSO 2, 3 e 4: BUSCAR DADOS COMPLEMENTARES EM PARALELO ---
-      // Atualmente simulando as 3 chamadas distintas ao backend
-
-      /* No futuro será:
-        const [userData, phonesData, addressData] = await Promise.all([
-           api.get(`/usuarios/me`),
-           api.get(`/usuarios/me/telefones`),
-           api.get(`/usuarios/me/endereco`)
-        ]);
-      */
-
-      const [userData, telefonesData, enderecoData] = await Promise.all([
-        // Chamada 1: Dados do Usuário (Tabela Usuario)
-        new Promise((resolve) => {
-          setTimeout(
-            () =>
-              resolve({
-                id: 'uuid-usuario-123',
-                nome: 'João Matheus',
-                email,
-                cargo,
-                // Outros campos do model Usuario...
-              }),
-            300
-          );
-        }),
-
-        // Chamada 2: Telefones (Tabela Telefone)
-        new Promise((resolve) => {
-          setTimeout(
-            () =>
-              resolve([
-                { id: 1, ddd: '61', numero: '998765432', principal: true },
-                { id: 2, ddd: '61', numero: '33330000', principal: false }, // Exemplo de reserva
-              ]),
-            300
-          );
-        }),
-
-        // Chamada 3: Endereço (Tabela Endereco)
-        new Promise((resolve) => {
-          // Simulando que admin não tem endereço cadastrado, por exemplo
-          if (cargo === 'ADMIN') {
-            resolve(null);
-            return;
-          }
-
-          setTimeout(
-            () =>
-              resolve({
-                id: 10,
-                logradouro: 'Avenida das Araucárias',
-                numero: '1000',
-                complemento: 'Apto 101',
-                bairro: 'Águas Claras',
-                cidade: 'Brasília',
-                estado: 'DF',
-                cep: '71900-000',
-                pontoReferencia: 'Próximo ao Metrô',
-              }),
-            300
-          );
-        }),
-      ]);
-
-      // --- PASSO 5: UNIFICAÇÃO DOS DADOS ---
-      // Monta um objeto único para facilitar o uso
-      const fullUser = {
-        ...userData,
-        telefones: telefonesData || [],
-        endereco: enderecoData || null,
-      };
-
+      localStorage.setItem(TOKEN_KEY, accessToken);
+      const fullUser = await fetchUserData();
       setUser(fullUser);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(fullUser));
 
       return fullUser;
     } catch (error) {
       console.error('Erro no login:', error);
+      // Repassa o erro para que o componente de Login possa exibir feedback visual
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
+  // --- Atualiza os dados base do usuário ---
   const updateUser = async (updates) => {
     try {
-      // Simula chamada API (PUT /usuarios/me)
-      await new Promise((resolve) => {
-        setTimeout(resolve, 600);
-      });
+      await api.patch('/usuarios/me', updates);
 
       setUser((prevUser) => {
         const newUser = { ...prevUser, ...updates };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
         return newUser;
       });
       return true;
     } catch (error) {
-      console.error('Erro ao atualizar:', error);
+      console.error('Erro ao atualizar usuário:', error);
       throw error;
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(TOKEN_KEY);
-    // api.defaults.headers.Authorization = undefined;
+  // --- Realiza o logout do usuário ---
+  const logout = async () => {
+    try {
+      // Tenta avisar o backend para invalidar o refresh token (cookie)
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Erro ao fazer logout no backend (prosseguindo com limpeza local):', error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem('session_expired');
+    }
   };
 
   const temCargo = (cargosPermitidas) => {
@@ -174,6 +104,29 @@ export const AuthProvider = ({ children }) => {
     }
     return user.cargo === cargosPermitidas;
   };
+
+  // --- Recuperação de sessão ao carregar a página ---
+  useEffect(() => {
+    const recoverUser = async () => {
+      const storedToken = localStorage.getItem(TOKEN_KEY);
+
+      if (storedToken) {
+        try {
+          const freshUser = await fetchUserData();
+          setUser(freshUser);
+        } catch (error) {
+          console.warn('Token inválido ou expirado ao iniciar:', error);
+          // Se falhar (ex: 401), limpa o token
+          localStorage.removeItem(TOKEN_KEY);
+          setUser(null);
+        }
+      }
+
+      setLoading(false);
+    };
+
+    recoverUser();
+  }, []);
 
   return (
     <AuthContext.Provider

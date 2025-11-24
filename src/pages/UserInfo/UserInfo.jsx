@@ -180,6 +180,10 @@ const UserInfo = () => {
     }, 400);
   };
 
+  const closeConfirmarEnderecoModal = () => {
+    setConfirmarEnderecoModalIsOpen(false);
+  };
+
   // Carrega dados iniciais
   useEffect(() => {
     if (user) {
@@ -426,6 +430,7 @@ const UserInfo = () => {
           endereco={endereco}
           onBack={showEnderecoModal}
           onConfirm={handleAtualizaEndereco}
+          onClose={closeConfirmarEnderecoModal}
         />
       )}
 

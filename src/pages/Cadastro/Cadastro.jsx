@@ -6,6 +6,7 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import styles from '../Login/Login.module.css';
 import ReturnLink from '../../components/ReturnLink';
+import api from '../../services/api';
 
 // --- IMPORTS DOS MODAIS ---
 import AlertModal from '../../components/Modals/AlertModal';
@@ -23,10 +24,13 @@ const Cadastro = () => {
   const [nome, setNome] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+
   const [emailError, setEmailError] = useState(null);
   const [nomeError, setNomeError] = useState(null);
   const [senhaError, setSenhaError] = useState(null);
   const [confirmarSenhaError, setConfirmarSenhaError] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // --- ESTADOS DO FLUXO DE MODAIS ---
@@ -38,10 +42,24 @@ const Cadastro = () => {
     title: '',
     msg: '',
     type: 'primary',
+    redirectOnClose: false,
   });
 
-  const mostrarAlerta = (titulo, mensagem, tipo = 'primary') => {
-    setAlertModal({ isOpen: true, title: titulo, msg: mensagem, type: tipo });
+  const mostrarAlerta = (titulo, mensagem, tipo = 'primary', redirect = false) => {
+    setAlertModal({
+      isOpen: true,
+      title: titulo,
+      msg: mensagem,
+      type: tipo,
+      redirectOnClose: redirect,
+    });
+  };
+
+  const fecharAlerta = () => {
+    setAlertModal((prev) => ({ ...prev, isOpen: false }));
+    if (alertModal.redirectOnClose) {
+      navigate('/login');
+    }
   };
 
   const validarCampo = (name, value, allFormValues = {}) => {
@@ -123,33 +141,52 @@ const Cadastro = () => {
     }
   };
 
-  // --- FINALIZAÇÃO E ENVIO API ---
-  const finalizarCadastro = (comExtras, enderecoOverride = null) => {
-    const enderecoFinal = enderecoOverride || tempData.endereco;
+  // --- FINALIZAÇÃO E ENVIO PRA API ---
+  const finalizarCadastro = async (comExtras, enderecoOverride = null) => {
+    setModalStep('none');
+    setIsLoading(true);
 
+    const enderecoFinal = enderecoOverride || tempData.endereco;
+    const enderecoSanitizado = enderecoFinal
+      ? {
+          ...enderecoFinal,
+          estado: enderecoFinal.estado ? enderecoFinal.estado.toUpperCase() : enderecoFinal.estado,
+        }
+      : null;
+
+    // Monta o payload
     const payload = {
       nome,
       email,
       senha,
+      // Dados extras que serão passados para o hook 'onUserRegistered' no backend
       ...(comExtras && {
         telefones: tempData.telefones,
-        endereco: enderecoFinal,
+        endereco: enderecoSanitizado,
       }),
     };
 
-    // Fecha o modal atual
-    setModalStep('none');
+    try {
+      await api.post('/auth/register', payload);
 
-    console.log('Cadastro efetuado com sucesso!', payload);
-    // TODO: conectar com a API
-    // api.post('/cadastro', payload)...
+      if (comExtras) localStorage.removeItem('enderecoUsuarioTemp');
+      // Sucesso: Configura alerta com redirecionamento para login
+      mostrarAlerta(
+        'Cadastro realizado!',
+        'Verifique seu email para ativar sua conta antes de fazer login.',
+        'success',
+        true
+      );
+    } catch (error) {
+      console.error('Erro no cadastro:', error);
 
-    if (comExtras) localStorage.removeItem('enderecoUsuarioTemp');
+      const errorMsg =
+        error.response?.data?.message || 'Ocorreu um erro ao criar sua conta. Tente novamente.';
 
-    // Aguarda um pequeno delay para garantir que o modal antigo sumiu visualmente
-    setTimeout(() => {
-      mostrarAlerta('Cadastro realizado!', 'Realize o login para entrar em sua conta!', 'success');
-    }, 300);
+      mostrarAlerta('Erro no Cadastro', errorMsg, 'error', false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // --- HANDLERS DO FLUXO DE MODAIS ---
@@ -191,7 +228,6 @@ const Cadastro = () => {
 
   // 5. Mapa Final
   const handleFinalConfirm = (enderecoFinal) => {
-    // Se veio um endereço novo do mapa, usamos ele. Se não, usa o tempData (fallback)
     const enderecoParaSalvar = enderecoFinal || tempData.endereco;
     setTempData((prev) => ({ ...prev, endereco: enderecoParaSalvar }));
     finalizarCadastro(true, enderecoParaSalvar);
@@ -199,7 +235,6 @@ const Cadastro = () => {
 
   const handleBackToAddress = () => {
     const enderecoSalvo = localStorage.getItem('enderecoUsuarioTemp');
-    // Se tinha endereço no storage E o usuário não editou manualmente, volta para confirmação
     if (enderecoSalvo && JSON.stringify(tempData.endereco) === enderecoSalvo)
       setModalStep('check_storage');
     else setModalStep('new_address');
@@ -223,6 +258,7 @@ const Cadastro = () => {
             name="email"
             error={emailError}
             maxLength={255}
+            disabled={isLoading}
           />
           <Input
             label="Nome"
@@ -233,6 +269,7 @@ const Cadastro = () => {
             name="nome"
             error={nomeError}
             maxLength={50}
+            disabled={isLoading}
           />
           <Input
             label="Senha"
@@ -243,6 +280,8 @@ const Cadastro = () => {
             name="senha"
             error={senhaError}
             maxLength={128}
+            autoComplete="new-password"
+            disabled={isLoading}
           />
           <Input
             label="Confirmar senha"
@@ -253,10 +292,12 @@ const Cadastro = () => {
             name="confirmarSenha"
             error={confirmarSenhaError}
             maxLength={128}
+            autoComplete="new-password"
+            disabled={isLoading}
           />
 
-          <Button type="submit" variant="primary" className={styles.fullWidth}>
-            Cadastrar
+          <Button type="submit" variant="primary" className={styles.fullWidth} disabled={isLoading}>
+            {isLoading ? 'Cadastrando...' : 'Cadastrar'}
           </Button>
 
           <p className={styles.orDivider}>Ou...</p>
@@ -264,6 +305,7 @@ const Cadastro = () => {
             type="button"
             variant="outline-yellow"
             className={`${styles.fullWidth} ${styles.googleButton}`}
+            disabled={isLoading}
           >
             <span>Continuar com</span>
             <img src={googleLogo} alt="Logo do Google" style={{ height: '1rem', width: 'auto' }} />
@@ -272,7 +314,7 @@ const Cadastro = () => {
 
         <ReturnLink to="/" text="Voltar para Home" className={styles.returnLink} />
         <p className={styles.registerPrompt}>
-          Já tem uma conta?{' '}
+          Já tem uma conta?
           <Link to="/login" className={styles.registerLink}>
             Fazer login
           </Link>
@@ -331,6 +373,7 @@ const Cadastro = () => {
           endereco={tempData.endereco}
           onBack={handleBackToAddress}
           onConfirm={handleFinalConfirm}
+          onClose={closeModals}
         />
       )}
 
@@ -340,10 +383,7 @@ const Cadastro = () => {
           description={alertModal.msg}
           variant={alertModal.type === 'error' ? 'primary' : 'outline-success'}
           icon={alertModal.type === 'error' ? 'error' : 'success'}
-          onClose={() => {
-            setAlertModal({ ...alertModal, isOpen: false });
-            navigate('/login');
-          }}
+          onClose={fecharAlerta}
         />
       )}
     </div>

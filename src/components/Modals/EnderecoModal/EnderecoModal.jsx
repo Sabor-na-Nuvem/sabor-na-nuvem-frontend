@@ -53,7 +53,7 @@ const EnderecoModal = ({
     bairro: '',
     cidade: '',
     estado: '',
-    referencia: '',
+    pontoReferencia: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -70,7 +70,7 @@ const EnderecoModal = ({
         bairro: initialData.bairro || '',
         cidade: initialData.cidade || '',
         estado: initialData.estado || '',
-        referencia: initialData.referencia || initialData.pontoReferencia || '',
+        pontoReferencia: initialData.referencia || initialData.pontoReferencia || '',
       });
     }
   }, [initialData]);
@@ -186,7 +186,7 @@ const EnderecoModal = ({
               cidade: a.city || a.town || a.municipality || '',
               estado: getStateCode(a.state) || '',
               complemento: '',
-              referencia: '',
+              pontoReferencia: '',
             };
             setFormData((prev) => ({ ...prev, ...novo }));
             setErrors({});
@@ -441,7 +441,7 @@ const EnderecoModal = ({
                     <Input
                       label="Ponto de referência"
                       name="referencia"
-                      value={formData.referencia}
+                      value={formData.pontoReferencia}
                       onChange={handleChange}
                       disabled={!isEditing}
                     />
