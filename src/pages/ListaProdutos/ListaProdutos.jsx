@@ -132,7 +132,6 @@ const ListaProdutos = () => {
               textAlign: 'center',
               fontSize: '0.9em',
               color: 'var(--color-primary)',
-              marginTop: '-10px',
             }}
           >
             Loja: {carrinhoInfo.loja.nome}

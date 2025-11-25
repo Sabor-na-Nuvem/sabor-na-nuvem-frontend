@@ -6,7 +6,6 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import styles from '../Login/Login.module.css';
 import ReturnLink from '../../components/ReturnLink';
-import api from '../../services/api';
 
 // --- IMPORTS DOS MODAIS ---
 import AlertModal from '../../components/Modals/AlertModal';
@@ -15,6 +14,7 @@ import ConfirmModal from '../../components/Modals/ConfirmModal';
 import ContatoModal from '../../components/Modals/ContatoModal';
 import ConfirmarEnderecoFinalModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoFinalModal';
 import ConfirmarEnderecoExistenteModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoExistenteModal';
+import { register } from '../../services/auth.service';
 
 const Cadastro = () => {
   const navigate = useNavigate();
@@ -167,7 +167,7 @@ const Cadastro = () => {
     };
 
     try {
-      await api.post('/auth/register', payload);
+      await register(payload);
 
       if (comExtras) localStorage.removeItem('enderecoUsuarioTemp');
       // Sucesso: Configura alerta com redirecionamento para login
@@ -269,6 +269,7 @@ const Cadastro = () => {
             name="nome"
             error={nomeError}
             maxLength={50}
+            autoComplete="username"
             disabled={isLoading}
           />
           <Input

@@ -13,7 +13,14 @@ import ConfirmModal from '../../components/Modals/ConfirmModal';
 import { useAuth } from '../../contexts/AuthContext';
 import AtualizarSenhaModal from '../../components/Modals/AtualizarSenhaModal';
 import ConfirmarEnderecoFinalModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoFinalModal';
-import api from '../../services/api';
+import {
+  adicionarTelefone,
+  atualizarEndereco,
+  atualizarTelefone,
+  criarEndereco,
+  deletarConta,
+} from '../../services/usuario.service';
+import { requestEmailUpdate, updatePassword } from '../../services/auth.service';
 
 // --- COMPONENTE AUXILIAR (EditableRow) ---
 const EditableRow = ({
@@ -333,9 +340,9 @@ const UserInfo = () => {
         const { ddd, numero } = parseTelefone(valueToSave);
 
         if (telefoneExistente) {
-          await api.put(`/usuarios/${user.id}/telefones/${telefoneExistente.id}`, { ddd, numero });
+          await atualizarTelefone(user.id, telefoneExistente.id, { ddd, numero });
         } else {
-          await api.post(`/usuarios/${user.id}/telefones`, { ddd, numero });
+          await adicionarTelefone(user.id, { ddd, numero });
         }
 
         const novosTelefones = [...(user.telefones || [])];
@@ -378,7 +385,7 @@ const UserInfo = () => {
         return;
       }
 
-      await api.post('/auth/request-email-update', {
+      await requestEmailUpdate({
         novoEmail: pendingEmail,
         senhaAtual,
       });
@@ -411,9 +418,9 @@ const UserInfo = () => {
 
       // Verifica se já existe endereço para decidir entre PUT ou POST
       if (user.endereco && user.endereco.id) {
-        await api.put(`/usuarios/${user.id}/endereco`, enderecoSanitizado);
+        await atualizarEndereco(user.id, enderecoSanitizado);
       } else {
-        await api.post(`/usuarios/${user.id}/endereco`, enderecoSanitizado);
+        await criarEndereco(user.id, enderecoSanitizado);
       }
 
       // Atualiza contexto
@@ -436,7 +443,7 @@ const UserInfo = () => {
         showAlert('Erro', 'Senha é obrigatória para excluir a conta.', 'error');
         return;
       }
-      await api.delete('/usuarios/me', { data: { senha: senhaConfirmacao } });
+      await deletarConta(senhaConfirmacao);
 
       // Salva uma "Flash Message" no storage para a próxima tela ler
       localStorage.setItem('delete_feedback', 'true');
@@ -452,7 +459,7 @@ const UserInfo = () => {
   // --- LÓGICA DE ATUALIZAR SENHA ---
   const handleUpdatePassword = async ({ senhaAntiga, novaSenha }) => {
     try {
-      await api.patch('/auth/update-password', { senhaAntiga, novaSenha });
+      await updatePassword(senhaAntiga, novaSenha);
 
       setSenhaModalIsOpen(false);
 
