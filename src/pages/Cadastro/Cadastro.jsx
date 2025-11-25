@@ -373,7 +373,6 @@ const Cadastro = () => {
           endereco={tempData.endereco}
           onBack={handleBackToAddress}
           onConfirm={handleFinalConfirm}
-          onClose={closeModals}
         />
       )}
 

@@ -9,6 +9,7 @@ import styles from './ConfirmarEnderecoModal.module.css';
 import shared from '../ModalShared.module.css';
 import AlertModal from '../AlertModal/AlertModal';
 import ModalWrapper from '../ModalWrapper';
+import api from '../../../services/api';
 
 // --- COMPONENTE DE CONTEÚDO INTERNO ---
 // Recebe 'onRequestClose' injetado automaticamente pelo ModalWrapper
@@ -73,29 +74,28 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
   const handleMarkerDrag = async (id, newCoords) => {
     setIsUpdatingAddress(true);
     try {
-      // 1. Atualização Otimista: Move o pino visualmente imediatamente
-      setCurrentAddress((prev) => ({ ...prev, latitude: newCoords.lat, longitude: newCoords.lng }));
+      // Move o pino visualmente imediatamente
+      setCurrentAddress((prev) => ({
+        ...prev,
+        latitude: newCoords.lat,
+        longitude: newCoords.lng,
+      }));
 
-      // 2. Reverse Geocoding: Busca o endereço da nova coordenada
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${newCoords.lat}&lon=${newCoords.lng}&addressdetails=1&zoom=18`;
-      const res = await fetch(url, { headers: { 'User-Agent': 'SaborNaNuvemApp/1.0' } });
-      const data = await res.json();
+      // Chamada ao backend
+      const { data } = await api.get('/geocoding/reverse', {
+        params: { lat: newCoords.lat, lon: newCoords.lng },
+      });
 
-      if (data && data.address) {
-        const addr = data.address;
+      if (data) {
         setCurrentAddress((prev) => ({
           ...prev,
-          // Mantém dados antigos como fallback se a API não retornar
-          logradouro: addr.road || addr.pedestrian || addr.street || prev.logradouro,
-          numero: addr.house_number || prev.numero,
-          bairro: addr.suburb || addr.neighbourhood || prev.bairro,
-          cidade: addr.city || addr.town || prev.cidade,
-          estado: getStateCode(addr.state) || prev.estado,
-          cep: `${(addr.postcode || prev.cep).replace(/\D/g, '').slice(0, 5)}-${(
-            addr.postcode || prev.cep
-          )
-            .replace(/\D/g, '')
-            .slice(5)}`,
+          // Mantém dados antigos como fallback se a API retornar vazio
+          logradouro: data.logradouro || prev.logradouro,
+          numero: data.numero || prev.numero,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.cidade || prev.cidade,
+          estado: getStateCode(data.estado) || prev.estado,
+          cep: data.cep || prev.cep,
         }));
       }
     } catch (error) {
