@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Section from '../../components/Section';
 import Button from '../../components/Button';
@@ -6,12 +6,35 @@ import imagemPrincipal from '../../assets/placeholder-big.png';
 import imagemCards from '../../assets/placeholder-small.png';
 import useMediaQuery from '../../hooks/useMediaQuery';
 import styles from './Home.module.css';
+import { buscarCategoriaPorNome, listarProdutosPorCategoria } from '../../services/produto.service';
 
 const DESKTOP_BREAKPOINT = '(min-width: 1024px)';
 
 const Home = () => {
   const navigate = useNavigate();
   const isDesktop = useMediaQuery(DESKTOP_BREAKPOINT);
+
+  const [produtos, setProdutos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const carregarDados = async () => {
+      setLoading(true);
+      try {
+        const categoria = await buscarCategoriaPorNome('Destaques do Dia');
+
+        const listaProdutos = await listarProdutosPorCategoria(categoria.id);
+
+        setProdutos(listaProdutos);
+      } catch (error) {
+        console.error('Erro ao carregar produtos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    carregarDados();
+  }, []);
 
   return (
     <Section id="home">
@@ -57,37 +80,23 @@ const Home = () => {
           <h3>Destaques do Dia?</h3>
         </div>
         <div className={styles.destaquesContainer}>
-          <div className={styles.destaquesCard}>
-            <div className={styles.destaquesText}>
-              <h4>Cheese Burger</h4>
-              <p>
-                O tradicional. Um hambúrger de carne bovina (80g), queijo cheddar, maionese e pão.
-              </p>
-            </div>
-            <img src={imagemCards} className={styles.destaquesImagem} />
-          </div>
-
-          <div className={styles.destaquesCard}>
-            <div className={styles.destaquesText}>
-              <h4>X-Bacon</h4>
-              <p>
-                Dois hambúrgueres (80g carne bovina), queijo cheddar, fatias de bacon, ketchup,
-                mostarda e pão com gergelim
-              </p>
-            </div>
-            <img src={imagemCards} className={styles.destaquesImagem} />
-          </div>
-
-          <div className={styles.destaquesCard}>
-            <div className={styles.destaquesText}>
-              <h4>Mega Combo</h4>
-              <p>
-                Perfeito para quando a fome bate! Um X-Bacon com porção média de fritas e aquele
-                refrigerente bem gelado!
-              </p>
-            </div>
-            <img src={imagemCards} className={styles.destaquesImagem} />
-          </div>
+          {!loading ? (
+            produtos.map((produto) => (
+              <div
+                key={produto.id}
+                onClick={() => navigate(`/detalhes-produto/${produto.id}`)}
+                className={styles.destaquesCard}
+              >
+                <div className={styles.destaquesText}>
+                  <h4>{produto.nome}</h4>
+                  <p>{produto.descricao}</p>
+                </div>
+                <img src={produto.imagemUrl || imagemCards} className={styles.destaquesImagem} />
+              </div>
+            ))
+          ) : (
+            <div style={{ width: '100%', textAlign: 'center' }}>Carregando...</div>
+          )}
         </div>
       </div>
     </Section>

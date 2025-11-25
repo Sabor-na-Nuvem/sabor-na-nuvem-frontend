@@ -8,6 +8,7 @@ import Button from '../../components/Button';
 import QuantitySelector from '../../components/QuantitySelector';
 import { useCarrinho } from '../../contexts/CarrinhoContext';
 import useMediaQuery from '../../hooks/useMediaQuery';
+import placeholderImage from '../../assets/placeholder-small.png';
 import styles from './Carrinho.module.css';
 import { formatCurrency } from '../../utils/produtoUtils';
 import { formatAddress } from '../../utils/enderecoUtils';
@@ -102,7 +103,7 @@ const Carrinho = () => {
                   </div>
                   <div>
                     <img
-                      src={item.produto?.imagemUrl || item.imagemUrl}
+                      src={item.produto?.imagemUrl || item.imagemUrl || placeholderImage}
                       alt={item.produto?.nome || item.nomeProduto}
                       className={styles.itemImagem}
                     />
@@ -124,9 +125,7 @@ const Carrinho = () => {
                       <FaRegTrashAlt size={20} />
                     </button>
                   </div>
-                  <span className={styles.itemCarrinhoPreco}>
-                    R$ {formatCurrency(precoTotalItem)}
-                  </span>
+                  <span className={styles.itemCarrinhoPreco}>{formatCurrency(precoTotalItem)}</span>
                 </div>
               </div>
             );

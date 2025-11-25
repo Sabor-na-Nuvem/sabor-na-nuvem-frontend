@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import styles from './QuantitySelector.module.css';
 
-const QuantitySelector = ({ initialQuantity = 1, min = 1, onQuantityChange }) => {
+const QuantitySelector = ({ initialQuantity = 1, min = 1, onQuantityChange, disabled = false }) => {
   const [qtdProduto, setQtdProduto] = useState(initialQuantity);
 
   const handleDecrease = () => {
@@ -24,7 +24,7 @@ const QuantitySelector = ({ initialQuantity = 1, min = 1, onQuantityChange }) =>
       <button
         className={styles.button}
         onClick={handleDecrease}
-        disabled={qtdProduto === min}
+        disabled={qtdProduto === min || disabled}
         type="button"
       >
         <span className={styles.minus}>-</span>
@@ -32,7 +32,7 @@ const QuantitySelector = ({ initialQuantity = 1, min = 1, onQuantityChange }) =>
 
       <span className={styles.quantity}>{qtdProduto}</span>
 
-      <button className={styles.button} onClick={handleIncrease} type="button">
+      <button className={styles.button} onClick={handleIncrease} type="button" disabled={disabled}>
         <span className={styles.plus}>+</span>
       </button>
     </div>
@@ -43,6 +43,7 @@ QuantitySelector.propTypes = {
   initialQuantity: PropTypes.number,
   min: PropTypes.number,
   onQuantityChange: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 export default QuantitySelector;

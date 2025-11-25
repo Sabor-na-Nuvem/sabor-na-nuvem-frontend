@@ -6,30 +6,29 @@ export const getModificadorData = (id) => {
 
 export const calcularPrecoTotal = (produto, qtdProduto, modificadoresSelecionadosUI) => {
   if (!produto) return 0;
+  let total = produto.preco || 0;
 
-  const precoProdutoBase = produto.preco;
-  let precoTotalModificadores = 0;
+  if (produto.personalizacao) {
+    produto.personalizacao.forEach((grupo) => {
+      const selecao = modificadoresSelecionadosUI[grupo.id];
+      if (!selecao) return;
 
-  Object.values(modificadoresSelecionadosUI).forEach((selectedValue) => {
-    // Caso 1: Seleção única (radio button) - selectedValue é um ID numérico
-    if (typeof selectedValue === 'number' && selectedValue !== null) {
-      const modifier = getModificadorData(selectedValue);
-      if (modifier && modifier.precoAdicional > 0) {
-        precoTotalModificadores += modifier.precoAdicional;
+      const modsDoGrupo = grupo.modificadores;
+
+      const somarMod = (modId) => {
+        const mod = modsDoGrupo.find((m) => m.id === modId);
+        if (mod) total += Number(mod.valorAdicional || 0);
+      };
+
+      if (Array.isArray(selecao)) {
+        selecao.forEach((id) => somarMod(id));
+      } else {
+        somarMod(selecao);
       }
-    }
-    // Caso 2: Múltipla seleção (checkboxes) - selectedValue é um array de IDs
-    else if (Array.isArray(selectedValue)) {
-      selectedValue.forEach((modifierId) => {
-        const modifier = getModificadorData(modifierId);
-        if (modifier && modifier.precoAdicional > 0) {
-          precoTotalModificadores += modifier.precoAdicional;
-        }
-      });
-    }
-  });
+    });
+  }
 
-  return (precoProdutoBase + precoTotalModificadores) * qtdProduto;
+  return total * qtdProduto;
 };
 
 export const formatCurrency = (valor) => {
