@@ -1,10 +1,17 @@
 /* eslint-disable no-else-return */
-import React, { createContext, useState, useEffect, useContext, useMemo } from 'react';
+import React, { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 // eslint-disable-next-line import/no-unresolved
 import { v4 as uuidv4 } from 'uuid';
-import api from '../services/api';
 import { useAuth } from './AuthContext';
+import {
+  adicionarItemCarrinho,
+  atualizarCarrinho,
+  atualizarQuantidadeItem,
+  buscarCarrinho,
+  removerItemCarrinho,
+  requestLimparCarrinho,
+} from '../services/carrinho.service';
 
 export const CarrinhoContext = createContext();
 
@@ -20,50 +27,47 @@ export const CarrinhoProvider = ({ children }) => {
   const [loadingCarrinho, setLoadingCarrinho] = useState(false);
 
   // --- 1. CARREGAMENTO DO CARRINHO ---
-  useEffect(() => {
-    const carregarCarrinho = async () => {
-      if (user) {
-        // --- MODO LOGADO (Backend) ---
-        setLoadingCarrinho(true);
+  const refreshCarrinho = useCallback(async () => {
+    if (user) {
+      // --- MODO LOGADO (Backend) ---
+      setLoadingCarrinho(true);
+      try {
+        const { data } = await buscarCarrinho();
+
+        const { itensNoCarrinho, ...infoGeral } = data;
+
+        setCarrinho(itensNoCarrinho || []);
+        setCarrinhoInfo(data.id ? infoGeral : null);
+      } catch (error) {
+        console.error('Erro ao buscar carrinho do servidor:', error);
+      } finally {
+        setLoadingCarrinho(false);
+      }
+    } else {
+      // --- MODO ANÔNIMO (LocalStorage) ---
+      // Recarrega do storage para garantir sincronia se houve mudança externa
+      const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedData) {
         try {
-          const { data } = await api.get('/usuarios/me/carrinho');
+          const parsedData = JSON.parse(savedData);
 
-          const { itensNoCarrinho, ...infoGeral } = data;
-
-          setCarrinho(itensNoCarrinho || []);
-          setCarrinhoInfo(data.id ? infoGeral : null);
-        } catch (error) {
-          console.error('Erro ao buscar carrinho:', error);
-        } finally {
-          setLoadingCarrinho(false);
-        }
-      } else {
-        // --- MODO ANÔNIMO (LocalStorage) ---
-        const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (savedData) {
-          try {
-            const parsedData = JSON.parse(savedData);
-
-            if (Array.isArray(parsedData)) {
-              setCarrinho(parsedData);
-              setCarrinhoInfo(null);
-            } else {
-              setCarrinho(parsedData.itens || []);
-              setCarrinhoInfo(parsedData.info || null);
-            }
-          } catch (e) {
-            localStorage.removeItem(LOCAL_STORAGE_KEY);
-            setCarrinho([]);
+          if (Array.isArray(parsedData)) {
+            setCarrinho(parsedData);
             setCarrinhoInfo(null);
+          } else {
+            setCarrinho(parsedData.itens || []);
+            setCarrinhoInfo(parsedData.info || null);
           }
-        } else {
+        } catch (e) {
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
           setCarrinho([]);
           setCarrinhoInfo(null);
         }
+      } else {
+        setCarrinho([]);
+        setCarrinhoInfo(null);
       }
-    };
-
-    carregarCarrinho();
+    }
   }, [user]);
 
   // --- 2. PERSISTÊNCIA LOCAL (Apenas Anônimos) ---
@@ -104,7 +108,7 @@ export const CarrinhoProvider = ({ children }) => {
             modificadorId: m.modificadorId,
           })),
         };
-        const { data } = await api.post('/usuarios/me/carrinho/itens', payload);
+        const { data } = await adicionarItemCarrinho(payload);
 
         const { itensNoCarrinho, ...infoGeral } = data;
         setCarrinho(itensNoCarrinho || []);
@@ -157,7 +161,7 @@ export const CarrinhoProvider = ({ children }) => {
   const removerItem = async (item) => {
     if (user) {
       try {
-        const { data } = await api.delete(`/usuarios/me/carrinho/itens/${item.id}`);
+        const { data } = await removerItemCarrinho(item.id);
 
         if (data && data.itensNoCarrinho) {
           const { itensNoCarrinho, ...infoGeral } = data;
@@ -192,9 +196,7 @@ export const CarrinhoProvider = ({ children }) => {
           prev.map((i) => (i.id === item.id ? { ...i, qtdProduto: quantidade } : i))
         );
 
-        const { data } = await api.patch(`/usuarios/me/carrinho/itens/${item.id}`, {
-          qtdProduto: quantidade,
-        });
+        const { data } = await atualizarQuantidadeItem(item.id, quantidade);
 
         if (data && data.itensNoCarrinho) {
           const { itensNoCarrinho, ...infoGeral } = data;
@@ -217,7 +219,7 @@ export const CarrinhoProvider = ({ children }) => {
   const limparCarrinho = async () => {
     if (user) {
       try {
-        await api.delete('/usuarios/me/carrinho');
+        await requestLimparCarrinho();
       } catch (error) {
         console.error(error);
       }
@@ -231,7 +233,7 @@ export const CarrinhoProvider = ({ children }) => {
 
   const atualizarInfoCarrinho = async (dados) => {
     if (user) {
-      const { data } = await api.patch('/usuarios/me/carrinho', dados);
+      const { data } = await atualizarCarrinho(dados);
       // Backend retorna { carrinho: {...}, avisos: [] }
       const { itensNoCarrinho, ...infoGeral } = data.carrinho;
       setCarrinho(itensNoCarrinho);
@@ -265,6 +267,7 @@ export const CarrinhoProvider = ({ children }) => {
   return (
     <CarrinhoContext.Provider
       value={{
+        refreshCarrinho,
         carrinho,
         carrinhoInfo,
         loadingCarrinho,

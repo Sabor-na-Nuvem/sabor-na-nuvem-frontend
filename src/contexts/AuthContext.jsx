@@ -1,6 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
-import api from '../services/api';
+import {
+  atualizarUsuario,
+  buscarEndereco,
+  buscarUsuarioAtual,
+  listarTelefones,
+} from '../services/usuario.service';
+import { requestLogin, requestLogout } from '../services/auth.service';
 
 export const AuthContext = createContext();
 
@@ -14,14 +20,14 @@ export const AuthProvider = ({ children }) => {
   const fetchUserData = async () => {
     try {
       // 1. Busca os dados do usuário
-      const userRes = await api.get('/usuarios/me');
+      const userRes = await buscarUsuarioAtual();
       const userData = userRes.data;
       const userId = userData.id;
 
       // 2. Busca os dados complementares
       const [telefonesRes, enderecoRes] = await Promise.allSettled([
-        api.get(`/usuarios/${userId}/telefones`),
-        api.get(`/usuarios/${userId}/endereco`),
+        listarTelefones(userId),
+        buscarEndereco(userId),
       ]);
 
       // 3. Telefones (Opcional)
@@ -48,10 +54,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', { email, senha });
-      const { accessToken } = response.data;
+      const response = await requestLogin(email, senha);
 
+      const { accessToken } = response.data;
       localStorage.setItem(TOKEN_KEY, accessToken);
+
       const fullUser = await fetchUserData();
       setUser(fullUser);
 
@@ -68,7 +75,7 @@ export const AuthProvider = ({ children }) => {
   // --- Atualiza os dados base do usuário ---
   const updateUser = async (updates) => {
     try {
-      await api.patch('/usuarios/me', updates);
+      await atualizarUsuario(updates);
 
       setUser((prevUser) => {
         const newUser = { ...prevUser, ...updates };
@@ -95,7 +102,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       // Tenta avisar o backend para invalidar o refresh token (cookie)
-      await api.post('/auth/logout');
+      await requestLogout();
     } catch (error) {
       console.error('Erro ao fazer logout no backend (prosseguindo com limpeza local):', error);
     } finally {

@@ -13,7 +13,10 @@ import AlertModal from '../AlertModal/AlertModal';
 import { normalizeText, getStateCode } from '../../../utils/enderecoUtils';
 import ModalWrapper from '../ModalWrapper';
 import { useAuth } from '../../../contexts/AuthContext';
-import api from '../../../services/api';
+import {
+  buscarCoordenadasPorEndereco,
+  buscarEnderecoPorCoordenadas,
+} from '../../../services/geocoding.service';
 
 const EnderecoModal = ({
   onClose,
@@ -174,9 +177,7 @@ const EnderecoModal = ({
           const { latitude, longitude } = p.coords;
 
           // Chama o Proxy do Backend para Reverse Geocoding
-          const { data } = await api.get('/geocoding/reverse', {
-            params: { lat: latitude, lon: longitude },
-          });
+          const { data } = await buscarEnderecoPorCoordenadas(latitude, longitude);
 
           if (data) {
             const novo = {
@@ -228,9 +229,7 @@ const EnderecoModal = ({
   const fetchCoordinates = async (d) => {
     const query = `${d.logradouro}, ${d.numero}, ${d.bairro}, ${d.cidade}, ${d.estado}, Brazil`;
     try {
-      const { data } = await api.get('/geocoding/search', {
-        params: { endereco: query },
-      });
+      const { data } = await buscarCoordenadasPorEndereco(query);
       return { latitude: data.latitude, longitude: data.longitude };
     } catch (e) {
       console.warn('Geocoding falhou (Backend):', e);

@@ -148,9 +148,19 @@ const Header = () => {
             Início
           </Link>
           {(!user || user.cargo === 'CLIENTE') && (
-            <Link to="/cardapio" onClick={toggleMenu}>
-              Cardápio
-            </Link>
+            <>
+              <Link to="/cardapio" onClick={toggleMenu}>
+                Cardápio
+              </Link>
+              <Link
+                to="/carrinho"
+                onClick={toggleMenu}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <LuShoppingCart size={18} />
+                Carrinho ({valorTotalFormatado})
+              </Link>
+            </>
           )}
 
           {user ? (
