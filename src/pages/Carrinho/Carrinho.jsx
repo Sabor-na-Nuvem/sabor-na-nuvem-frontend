@@ -436,7 +436,7 @@ const Carrinho = () => {
                       <h3>
                         Local:{' '}
                         {carrinhoInfo?.tipo === 'RETIRADA'
-                          ? carrinhoInfo?.loja?.nome || 'Loja Indefinida'
+                          ? carrinhoInfo?.loja?.nome || 'Sabor na Nuvem'
                           : getEnderecoAtual()
                             ? formatAddress(getEnderecoAtual())
                             : 'Clique para definir endereço'}
