@@ -16,13 +16,14 @@ import {
 export const CarrinhoContext = createContext();
 
 const LOCAL_STORAGE_KEY = 'carrinhoAnonimo';
+const DEFAULT_CARRINHO_INFO = { lojaId: 1 };
 
 export const CarrinhoProvider = ({ children }) => {
   const { user } = useAuth();
   // Apenas a LISTA de itens (Array)
   const [carrinho, setCarrinho] = useState([]);
   // Metadados do carrinho (Loja, Tipo, ID do Carrinho, Subtotal do Backend)
-  const [carrinhoInfo, setCarrinhoInfo] = useState(null);
+  const [carrinhoInfo, setCarrinhoInfo] = useState(DEFAULT_CARRINHO_INFO);
 
   const [loadingCarrinho, setLoadingCarrinho] = useState(false);
 
@@ -37,7 +38,7 @@ export const CarrinhoProvider = ({ children }) => {
         const { itensNoCarrinho, ...infoGeral } = data;
 
         setCarrinho(itensNoCarrinho || []);
-        setCarrinhoInfo(data.id ? infoGeral : null);
+        setCarrinhoInfo(data.id ? infoGeral : DEFAULT_CARRINHO_INFO);
       } catch (error) {
         console.error('Erro ao buscar carrinho do servidor:', error);
       } finally {
@@ -53,19 +54,19 @@ export const CarrinhoProvider = ({ children }) => {
 
           if (Array.isArray(parsedData)) {
             setCarrinho(parsedData);
-            setCarrinhoInfo(null);
+            setCarrinhoInfo(DEFAULT_CARRINHO_INFO);
           } else {
             setCarrinho(parsedData.itens || []);
-            setCarrinhoInfo(parsedData.info || null);
+            setCarrinhoInfo(parsedData.info || DEFAULT_CARRINHO_INFO);
           }
         } catch (e) {
           localStorage.removeItem(LOCAL_STORAGE_KEY);
           setCarrinho([]);
-          setCarrinhoInfo(null);
+          setCarrinhoInfo(DEFAULT_CARRINHO_INFO);
         }
       } else {
         setCarrinho([]);
-        setCarrinhoInfo(null);
+        setCarrinhoInfo(DEFAULT_CARRINHO_INFO);
       }
     }
   }, [user]);
@@ -112,7 +113,7 @@ export const CarrinhoProvider = ({ children }) => {
 
         const { itensNoCarrinho, ...infoGeral } = data;
         setCarrinho(itensNoCarrinho || []);
-        setCarrinhoInfo(infoGeral);
+        setCarrinhoInfo(infoGeral || DEFAULT_CARRINHO_INFO);
         return true;
       } catch (error) {
         console.error('Erro ao adicionar item:', error);
@@ -122,7 +123,12 @@ export const CarrinhoProvider = ({ children }) => {
       // --- FLUXO ANÔNIMO ---
 
       // 1. Validação de Loja
-      if (carrinhoInfo && carrinhoInfo.lojaId && carrinhoInfo.lojaId !== itemPadronizado.lojaId) {
+      if (
+        carrinhoInfo &&
+        carrinhoInfo.lojaId &&
+        carrinho.length > 0 &&
+        carrinhoInfo.lojaId !== itemPadronizado.lojaId
+      ) {
         // TODO: Adicionar alerta para isso
         throw new Error(`Este item é de outra loja. Limpe o carrinho para trocar de loja.`);
       }
@@ -130,6 +136,7 @@ export const CarrinhoProvider = ({ children }) => {
       // Atualiza Info se for o primeiro item
       if (!carrinhoInfo) {
         setCarrinhoInfo({
+          ...DEFAULT_CARRINHO_INFO,
           lojaId: itemPadronizado.lojaId,
           tipo: 'ENTREGA', // Padrão inicial
           loja: itemPadronizado.loja,
@@ -170,7 +177,7 @@ export const CarrinhoProvider = ({ children }) => {
         } else {
           // Carrinho ficou vazio/foi deletado
           setCarrinho([]);
-          setCarrinhoInfo(null);
+          setCarrinhoInfo(DEFAULT_CARRINHO_INFO);
         }
       } catch (error) {
         console.error('Erro ao remover item:', error);
@@ -181,7 +188,7 @@ export const CarrinhoProvider = ({ children }) => {
       setCarrinho(novoCarrinho);
 
       if (novoCarrinho.length === 0) {
-        setCarrinhoInfo(null);
+        setCarrinhoInfo(DEFAULT_CARRINHO_INFO);
       }
     }
   };
@@ -240,7 +247,7 @@ export const CarrinhoProvider = ({ children }) => {
       setCarrinhoInfo(infoGeral);
       return data.avisos;
     } else {
-      setCarrinhoInfo((prev) => ({ ...prev, ...dados }));
+      setCarrinhoInfo((prev) => ({ ...(prev || DEFAULT_CARRINHO_INFO), ...dados }));
       return [];
     }
   };

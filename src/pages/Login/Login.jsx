@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
-import googleLogo from '../../assets/google-logo.png';
+// import googleLogo from '../../assets/google-logo.png';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import AlertModal from '../../components/Modals/AlertModal';
@@ -10,6 +10,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import styles from './Login.module.css';
 
 const Login = () => {
+  const [searchParams] = useSearchParams();
+  const messageInParams = searchParams.get('message');
+  const errorInParams = searchParams.get('error');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -61,8 +64,26 @@ const Login = () => {
         type: 'primary',
       });
       localStorage.removeItem('delete_feedback');
+
+      // Prioridade 4: Email verificado (Sucesso)
+    } else if (messageInParams) {
+      setAlertInfo({
+        isOpen: true,
+        title: 'E-mail verificado!',
+        msg: 'Seu e-mail foi verificado com sucesso. Agora você pode realizar seu login!',
+        type: 'success',
+      });
+
+      // Prioridade 4: Email verificado (Sucesso)
+    } else if (errorInParams) {
+      setAlertInfo({
+        isOpen: true,
+        title: 'Erro na verificação!',
+        msg: 'Houve um erro na verificação do seu e-mail. Tente novamente.',
+        type: 'error',
+      });
     }
-  }, []);
+  }, [messageInParams, errorInParams]);
 
   // Fecha Alerta e Redireciona
   const closeAlert = () => {
@@ -150,9 +171,6 @@ const Login = () => {
             break;
         }
       } catch (error) {
-        console.error('Erro no login:', error);
-
-        // 3. Extrai a mensagem de erro do Backend (se disponível)
         const msgErro =
           error.response?.data?.message || 'Falha ao realizar login. Verifique suas credenciais.';
 
@@ -215,8 +233,8 @@ const Login = () => {
 
           <p className={styles.orDivider}>Ou...</p>
 
-          {/* Botão Google (Usando variante outline-yellow) */}
-          <Button
+          {/* TODO: Add integração de login com o google */}
+          {/* <Button
             type="button"
             variant="outline-yellow"
             className={`${styles.fullWidth} ${styles.googleButton}`}
@@ -225,7 +243,7 @@ const Login = () => {
             <span>Continuar com</span>
 
             <img src={googleLogo} alt="Logo do Google" style={{ height: '1rem', width: 'auto' }} />
-          </Button>
+          </Button> */}
         </form>
 
         {/* Link Voltar */}

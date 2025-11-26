@@ -385,10 +385,7 @@ const UserInfo = () => {
         return;
       }
 
-      await requestEmailUpdate({
-        novoEmail: pendingEmail,
-        senhaAtual,
-      });
+      await requestEmailUpdate(pendingEmail, senhaAtual);
 
       setConfirmEmailModalIsOpen(false);
       setDisabledFields((prev) => ({ ...prev, email: true }));

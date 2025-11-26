@@ -4,6 +4,7 @@ import Section from '../../components/Section';
 import styles from './Cardapio.module.css';
 import placeholderImage from '../../assets/placeholder-small.png';
 import { listarCategorias } from '../../services/produto.service';
+import { CATEGORY_IMAGES, DEFAULT_IMAGE } from '../../utils/categoriaUtils';
 
 const Cardapio = () => {
   const navigate = useNavigate();
@@ -39,6 +40,10 @@ const Cardapio = () => {
     );
   }
 
+  const getImagemCategoria = (nomeCategoria) => {
+    return CATEGORY_IMAGES[nomeCategoria];
+  };
+
   return (
     <Section id="cardapio">
       <div className="pageTitleContainer">
@@ -55,7 +60,7 @@ const Cardapio = () => {
           >
             {/* Fallback para placeholder se a categoria não tiver imagem */}
             <img
-              src={categoria.imagemUrl || placeholderImage}
+              src={getImagemCategoria(categoria.nome) || placeholderImage}
               className={styles.categoryImage}
               alt={categoria.nome}
               onError={(e) => {
@@ -68,7 +73,11 @@ const Cardapio = () => {
 
         {/* Botão "Todas as categorias" (ID especial, ex: 'todas' ou 0) */}
         <button className={styles.categoryButton} onClick={() => navigate(`/lista-produtos/todas`)}>
-          <img src={placeholderImage} className={styles.categoryImage} alt="Todas" />
+          <img
+            src={DEFAULT_IMAGE || placeholderImage}
+            className={styles.categoryImage}
+            alt="Todas"
+          />
           <span className={styles.categoryName}>Todas as categorias</span>
         </button>
       </div>

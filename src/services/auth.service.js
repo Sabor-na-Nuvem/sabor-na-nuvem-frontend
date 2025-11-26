@@ -31,3 +31,13 @@ export const requestEmailUpdate = async (novoEmail, senhaAtual) => {
   });
   return response;
 };
+
+export const requestPasswordReset = async (email) => {
+  const response = await api.post('/auth/request-password-reset', { email });
+  return response;
+};
+
+export const resetPassword = async (token, novaSenha) => {
+  const response = await api.post('/auth/reset-password', { token, novaSenha });
+  return response;
+};

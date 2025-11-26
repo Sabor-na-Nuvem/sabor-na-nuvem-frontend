@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RiFileList3Line } from 'react-icons/ri';
-import { MdOutlineDiscount } from 'react-icons/md';
+// import { MdOutlineDiscount } from 'react-icons/md';
 import { IoIosInformationCircleOutline } from 'react-icons/io';
-import imagemPrincipal from '../../assets/placeholder-big.png';
+import imagemPrincipal from '../../assets/perfilImage.png';
 import Section from '../../components/Section';
 import styles from './Perfil.module.css';
 import Button from '../../components/Button';
@@ -38,14 +38,15 @@ const Perfil = () => {
             >
               Histórico de Pedidos
             </Button>
-            <Button
+            {/* TODO: Descomentar o elemento abaixo após integrar cupons de desconto */}
+            {/* <Button
               variant="outline-red"
               className={styles.opcoesPerfil}
               icon={<MdOutlineDiscount size={25} />}
               openSimbol
             >
               Cupons de Desconto
-            </Button>
+            </Button> */}
           </div>
         </div>
 

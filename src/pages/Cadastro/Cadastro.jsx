@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
-import googleLogo from '../../assets/google-logo.png';
+// import googleLogo from '../../assets/google-logo.png';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import styles from '../Login/Login.module.css';
@@ -178,8 +178,6 @@ const Cadastro = () => {
         true
       );
     } catch (error) {
-      console.error('Erro no cadastro:', error);
-
       const errorMsg =
         error.response?.data?.message || 'Ocorreu um erro ao criar sua conta. Tente novamente.';
 
@@ -301,7 +299,8 @@ const Cadastro = () => {
             {isLoading ? 'Cadastrando...' : 'Cadastrar'}
           </Button>
 
-          <p className={styles.orDivider}>Ou...</p>
+          {/* TODO: Add integração de login com o google */}
+          {/* <p className={styles.orDivider}>Ou...</p>
           <Button
             type="button"
             variant="outline-yellow"
@@ -310,7 +309,7 @@ const Cadastro = () => {
           >
             <span>Continuar com</span>
             <img src={googleLogo} alt="Logo do Google" style={{ height: '1rem', width: 'auto' }} />
-          </Button>
+          </Button> */}
         </form>
 
         <ReturnLink to="/" text="Voltar para Home" className={styles.returnLink} />
