@@ -70,6 +70,7 @@ const ConfirmModal = ({
                         setError(null);
                       }}
                       error={error}
+                      maxLength={128}
                       placeholder="Digite sua senha"
                       autoFocus
                     />

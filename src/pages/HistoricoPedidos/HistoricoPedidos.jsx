@@ -5,12 +5,23 @@ import Button from '../../components/Button';
 import DetalhesPedidoModal from '../../components/Modals/DetalhesPedidoModal';
 import AlertModal from '../../components/Modals/AlertModal';
 import ConfirmModal from '../../components/Modals/ConfirmModal';
-import MOCK_PEDIDOS from '../../data/pedidos';
 import styles from './HistoricoPedidos.module.css';
+import { useCarrinho } from '../../contexts/CarrinhoContext';
+
+// Serviços
+import {
+  listarMeusPedidos,
+  cancelarMeuPedido,
+  adicionarItensDoPedidoAoCarrinho,
+} from '../../services/pedido.service';
+import { formatCurrency } from '../../utils/produtoUtils';
 
 const HistoricoPedidos = () => {
+  const { limparCarrinho, refreshCarrinho } = useCarrinho();
+
   const [todosOsPedidos, setTodosOsPedidos] = useState([]);
   const [pedidosMostrados, setPedidosMostrados] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Estados dos Filtros
   const [dataInicio, setDataInicio] = useState('');
@@ -49,10 +60,9 @@ const HistoricoPedidos = () => {
     return `${year}-${month}-${day}`;
   };
 
-  const parseDateBR = (dateString) => {
-    if (!dateString) return new Date(0);
-    const [day, month, year] = dateString.split('/');
-    return new Date(year, month - 1, day);
+  const formatDataHoraBR = (dataISO) => {
+    if (!dataISO) return '-';
+    return new Date(dataISO).toLocaleString('pt-BR');
   };
 
   const parseDateISO = (dateString) => {
@@ -61,17 +71,37 @@ const HistoricoPedidos = () => {
     return new Date(year, month - 1, day);
   };
 
+  // --- 1. CARREGAR PEDIDOS DO BACKEND ---
   useEffect(() => {
-    setTodosOsPedidos(MOCK_PEDIDOS);
-    setPedidosMostrados(MOCK_PEDIDOS);
+    const fetchPedidos = async () => {
+      setIsLoading(true);
+      try {
+        const response = await listarMeusPedidos();
+        const dados = response.data;
+        // O backend retorna array direto ou objeto? Ajuste se necessário.
+        // Assumindo que retorna array de pedidos
+        const lista = Array.isArray(dados) ? dados : dados.pedidos || [];
 
+        setTodosOsPedidos(lista);
+        setPedidosMostrados(lista);
+      } catch (error) {
+        console.error('Erro ao carregar pedidos:', error);
+        showAlert('Erro', 'Não foi possível carregar seu histórico.', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPedidos();
+
+    // Define datas iniciais para o filtro visual
     const hoje = new Date();
-    const inicioAno = new Date(2025, 0, 1);
-
+    const inicioAno = new Date(2025, 0, 1); // Ou uma data arbitrária no passado
     setDataInicio(formatDateToISO(inicioAno));
     setDataFim(formatDateToISO(hoje));
   }, []);
 
+  // --- 2. FILTRAGEM LOCAL ---
   useEffect(() => {
     if (!dataInicio || !dataFim) return;
 
@@ -82,11 +112,16 @@ const HistoricoPedidos = () => {
     endDate.setHours(23, 59, 59, 999);
 
     const filtrados = todosOsPedidos.filter((pedido) => {
-      const pedidoDate = parseDateBR(pedido.data);
+      const pedidoDate = new Date(pedido.createdAt); // Usa o campo do Prisma
       const dentroDoPrazo = pedidoDate >= startDate && pedidoDate <= endDate;
+
       const termo = produtoBusca.toLowerCase();
-      const temProduto = pedido.itens?.some((item) => item.nome.toLowerCase().includes(termo));
+      // Ajuste: O Prisma retorna itensNoPedido -> produto -> nome
+      const temProduto = pedido.itensNoPedido?.some((item) =>
+        item.produto.nome.toLowerCase().includes(termo)
+      );
       const temObs = (pedido.observacoes || '').toLowerCase().includes(termo);
+
       const correspondeBusca = !termo || temProduto || temObs;
       return dentroDoPrazo && correspondeBusca;
     });
@@ -104,9 +139,32 @@ const HistoricoPedidos = () => {
     setPedidoSelecionado(null);
   };
 
-  const handleRepeatOrder = (pedido) => {
+  // --- LÓGICA DE REPETIR PEDIDO ---
+  const handleRepeatOrder = async (pedido) => {
     handleCloseDetails();
-    showAlert('Sucesso!', `Adicionando ${pedido.itens.length} itens ao carrinho!`, 'success');
+
+    try {
+      // 1. Limpa o carrinho atual para evitar mistura de lojas
+      await limparCarrinho();
+
+      // 2. Chama o backend para copiar os itens
+      const response = await adicionarItensDoPedidoAoCarrinho(pedido.id);
+      const resultado = response.data;
+
+      // 3. Atualiza o contexto do carrinho com o resultado (novos itens)
+      if (resultado.carrinho) {
+        showAlert(
+          'Sucesso!',
+          `Os itens do pedido #${pedido.id} foram adicionados ao carrinho.`,
+          'success'
+        );
+        await refreshCarrinho();
+      }
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || 'Erro ao repetir pedido.';
+      showAlert('Erro', msg, 'error');
+    }
   };
 
   // Solicita o cancelamento (Abre o modal)
@@ -116,37 +174,47 @@ const HistoricoPedidos = () => {
   };
 
   // Confirma e executa o cancelamento
-  const finalizarCancelamento = () => {
+  const finalizarCancelamento = async () => {
     if (!pedidoParaCancelar) return;
 
-    // Atualiza listas locais
-    const atualizarLista = (lista) =>
-      lista.map((p) => (p.id === pedidoParaCancelar.id ? { ...p, status: 'Cancelado' } : p));
+    try {
+      // Chama API
+      await cancelarMeuPedido(pedidoParaCancelar.id);
 
-    setTodosOsPedidos(atualizarLista);
-    setPedidosMostrados(atualizarLista);
+      // Atualiza listas locais para refletir a mudança imediatamente
+      const atualizarLista = (lista) =>
+        lista.map((p) => (p.id === pedidoParaCancelar.id ? { ...p, status: 'CANCELADO' } : p));
 
-    // Se o modal de detalhes estiver aberto com este pedido, atualiza o status nele também
-    if (pedidoSelecionado && pedidoSelecionado.id === pedidoParaCancelar.id) {
-      setPedidoSelecionado((prev) => ({ ...prev, status: 'Cancelado' }));
+      setTodosOsPedidos((prev) => atualizarLista(prev));
+
+      // Se o modal de detalhes estiver aberto, atualiza ele também
+      if (pedidoSelecionado && pedidoSelecionado.id === pedidoParaCancelar.id) {
+        setPedidoSelecionado((prev) => ({ ...prev, status: 'CANCELADO' }));
+      }
+
+      showAlert('Cancelado', 'Pedido cancelado com sucesso.', 'success');
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || 'Não foi possível cancelar o pedido.';
+      showAlert('Erro', msg, 'error');
+    } finally {
+      setConfirmCancelOpen(false);
+      setPedidoParaCancelar(null);
     }
-
-    // TODO: API Call
-    // api.patch(...)
-
-    // Fecha modal de confirmação
-    setConfirmCancelOpen(false);
-    setPedidoParaCancelar(null);
-
-    // Feedback visual
-    showAlert('Cancelado', 'Pedido cancelado com sucesso.', 'success');
   };
 
-  // Fecha o modal sem fazer nada
   const abortarCancelamento = () => {
     setConfirmCancelOpen(false);
     setPedidoParaCancelar(null);
   };
+
+  if (isLoading) {
+    return (
+      <Section>
+        <div style={{ textAlign: 'center', padding: '4rem' }}>Carregando histórico...</div>
+      </Section>
+    );
+  }
 
   return (
     <Section>
@@ -161,6 +229,7 @@ const HistoricoPedidos = () => {
           </div>
 
           <div className={styles.filterSection}>
+            {/* ... Filtros mantidos iguais ... */}
             <div className={styles.filterLabelContainer}>
               <LuFilter size={20} className={styles.filterIcon} />
               <span className={styles.filterLabelText}>Filtros:</span>
@@ -210,8 +279,11 @@ const HistoricoPedidos = () => {
                 <div key={pedido.id} className={styles.orderCard}>
                   <div className={styles.orderHeader}>
                     <span className={styles.orderDate}>
-                      {pedido.data} - {pedido.hora}
+                      {/* Formata a data vinda do Prisma */}
+                      {formatDataHoraBR(pedido.createdAt)}
                     </span>
+                    {/* Opcional: Mostrar ID do pedido */}
+                    <span style={{ fontSize: '0.8em', color: '#888' }}>#{pedido.id}</span>
                   </div>
                   <div className={styles.orderBody}>
                     <div className={styles.infoItem}>
@@ -221,20 +293,30 @@ const HistoricoPedidos = () => {
                       </ul>
                     </div>
                     <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Modo de entrega:</span>
+                      <span className={styles.infoLabel}>Loja:</span>
                       <ul className={styles.infoList}>
-                        <li>{pedido.modoEntrega}</li>
+                        <li>{pedido.loja?.nome}</li>
                       </ul>
                     </div>
                     <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Observações:</span>
+                      <span className={styles.infoLabel}>Modo de entrega:</span>
                       <ul className={styles.infoList}>
-                        <li>{pedido.observacoes}</li>
+                        <li>{pedido.tipo}</li>
                       </ul>
                     </div>
+                    {pedido.observacoes && (
+                      <div className={styles.infoItem}>
+                        <span className={styles.infoLabel}>Observações:</span>
+                        <ul className={styles.infoList}>
+                          <li>{pedido.observacoes}</li>
+                        </ul>
+                      </div>
+                    )}
                   </div>
                   <div className={styles.orderFooter}>
-                    <span className={styles.orderTotal}>{pedido.total}</span>
+                    <span className={styles.orderTotal}>
+                      {formatCurrency(Number(pedido.valorCobrado))}
+                    </span>
                     <Button
                       variant="outline-yellow"
                       className={styles.detailsButton}
@@ -272,14 +354,12 @@ const HistoricoPedidos = () => {
         />
       )}
 
-      {/* 5. Renderização do Modal de Confirmação */}
       {confirmCancelOpen && (
         <ConfirmModal
           title="Cancelar Pedido"
           description={
             <>
-              Tem certeza que deseja cancelar o pedido de
-              <strong> {pedidoParaCancelar?.total}</strong>?
+              Tem certeza que deseja cancelar o pedido <strong>#{pedidoParaCancelar?.id}</strong>?
               <br />
               <br />
               Esta ação não poderá ser desfeita.

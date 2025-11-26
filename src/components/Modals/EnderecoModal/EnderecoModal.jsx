@@ -13,6 +13,10 @@ import AlertModal from '../AlertModal/AlertModal';
 import { normalizeText, getStateCode } from '../../../utils/enderecoUtils';
 import ModalWrapper from '../ModalWrapper';
 import { useAuth } from '../../../contexts/AuthContext';
+import {
+  buscarCoordenadasPorEndereco,
+  buscarEnderecoPorCoordenadas,
+} from '../../../services/geocoding.service';
 
 const EnderecoModal = ({
   onClose,
@@ -53,7 +57,7 @@ const EnderecoModal = ({
     bairro: '',
     cidade: '',
     estado: '',
-    referencia: '',
+    pontoReferencia: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -70,7 +74,7 @@ const EnderecoModal = ({
         bairro: initialData.bairro || '',
         cidade: initialData.cidade || '',
         estado: initialData.estado || '',
-        referencia: initialData.referencia || initialData.pontoReferencia || '',
+        pontoReferencia: initialData.referencia || initialData.pontoReferencia || '',
       });
     }
   }, [initialData]);
@@ -81,7 +85,7 @@ const EnderecoModal = ({
   const closeAlert = () => setAlertInfo((prev) => ({ ...prev, isOpen: false }));
   const handleToggleEdit = () => {
     setIsEditing(!isEditing);
-    if (isUserPage) setFormData(user.endereco);
+    if (isUserPage && user.endereco) setFormData(user.endereco);
   };
 
   // --- LÓGICA 1: BUSCA POR CEP ---
@@ -171,31 +175,30 @@ const EnderecoModal = ({
       async (p) => {
         try {
           const { latitude, longitude } = p.coords;
-          const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
-          const res = await fetch(url, { headers: { 'User-Agent': 'SaborNaNuvemApp/1.0' } });
-          const d = await res.json();
-          if (d && d.address) {
-            const a = d.address;
+
+          // Chama o Proxy do Backend para Reverse Geocoding
+          const { data } = await buscarEnderecoPorCoordenadas(latitude, longitude);
+
+          if (data) {
             const novo = {
-              cep: `${(a.postcode || '').replace(/\D/g, '').slice(0, 5)}-${(a.postcode || '')
-                .replace(/\D/g, '')
-                .slice(5)}`,
-              logradouro: a.road || a.pedestrian || a.street || '',
-              numero: a.house_number || '',
-              bairro: a.suburb || a.neighbourhood || a.residential || '',
-              cidade: a.city || a.town || a.municipality || '',
-              estado: getStateCode(a.state) || '',
+              cep: data.cep || '',
+              logradouro: data.logradouro || '',
+              numero: data.numero || '',
+              bairro: data.bairro || '',
+              cidade: data.cidade || '',
+              estado: getStateCode(data.estado) || '',
               complemento: '',
-              referencia: '',
+              pontoReferencia: '',
             };
+
             setFormData((prev) => ({ ...prev, ...novo }));
             setErrors({});
-            if (novo.cep.length >= 8) buscarDadosPorCep(novo.cep);
           } else {
             showAlert('Erro', 'Endereço não encontrado.', 'error');
           }
         } catch (e) {
-          showAlert('Erro', 'Erro de conexão.', 'error');
+          console.error(e);
+          showAlert('Erro', 'Erro ao obter endereço.', 'error');
         } finally {
           setIsLocating(false);
         }
@@ -224,16 +227,14 @@ const EnderecoModal = ({
   };
 
   const fetchCoordinates = async (d) => {
-    const q = `${d.logradouro}, ${d.numero}, ${d.bairro}, ${d.cidade}, ${d.estado}, Brazil`;
-    const u = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`;
+    const query = `${d.logradouro}, ${d.numero}, ${d.bairro}, ${d.cidade}, ${d.estado}, Brazil`;
     try {
-      const r = await fetch(u, { headers: { 'User-Agent': 'SaborNaNuvemApp/1.0' } });
-      const j = await r.json();
-      if (j.length > 0) return { latitude: j[0].lat, longitude: j[0].lon };
+      const { data } = await buscarCoordenadasPorEndereco(query);
+      return { latitude: data.latitude, longitude: data.longitude };
     } catch (e) {
-      // Deixar vazio
+      console.warn('Geocoding falhou (Backend):', e);
+      return null;
     }
-    return null;
   };
 
   const validateForm = () => {
@@ -353,7 +354,7 @@ const EnderecoModal = ({
                         <LuLoaderCircle className={styles.spinning} />
                       </div>
                     )}
-                    {isEditing && !isFetchingCep && formData.cep.length < 8 && (
+                    {isEditing && !isFetchingCep && formData.cep?.length < 8 && (
                       <button
                         type="button"
                         onClick={encontrarCepPeloEndereco}
@@ -431,17 +432,17 @@ const EnderecoModal = ({
                     <Input
                       label="Complemento"
                       name="complemento"
-                      value={formData.complemento}
+                      value={formData.complemento || ''}
                       onChange={handleChange}
-                      placeholder="Apto, Bloco..."
+                      placeholder={isEditing ? 'Apto, Bloco...' : ''}
                       disabled={!isEditing}
                     />
                   </div>
                   <div className={styles.spanFull}>
                     <Input
                       label="Ponto de referência"
-                      name="referencia"
-                      value={formData.referencia}
+                      name="pontoReferencia"
+                      value={formData.pontoReferencia || ''}
                       onChange={handleChange}
                       disabled={!isEditing}
                     />

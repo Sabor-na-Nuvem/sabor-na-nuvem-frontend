@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 import { ESTADOS_BRASIL } from '../constants/estados';
 
 export const normalizeText = (text) =>
@@ -45,4 +46,44 @@ export const getStateCode = (fullStateName) => {
     return fullStateName.toUpperCase();
   }
   return map[normalized] || '';
+};
+
+export const formatAddress = (endereco) => {
+  if (!endereco) return 'Endereço não informado';
+
+  // Garante que não teremos 'undefined' ou 'null' na string
+  const logradouro = endereco.logradouro || '';
+  const numero = endereco.numero || 'S/N';
+  const complemento = endereco.complemento;
+  const bairro = endereco.bairro || '';
+  const cidade = endereco.cidade || '';
+  const estado = endereco.estado || '';
+  const cep = endereco.cep || '';
+
+  // Montagem das partes
+  let formatted = `${logradouro}, ${numero}`;
+
+  if (complemento) {
+    formatted += `, ${complemento}`;
+  }
+
+  if (bairro) {
+    formatted += ` - ${bairro}`;
+  }
+
+  if (cidade && estado) {
+    formatted += `, ${cidade} - ${estado}`;
+  }
+
+  if (cep) {
+    const cepFormatado = cep.replace(/\D/g, '').replace(/^(\d{5})(\d{3})/, '$1-$2');
+    formatted += `, ${cepFormatado}`;
+  }
+
+  return formatted;
+};
+
+export const formatAddressShort = (endereco) => {
+  if (!endereco) return '';
+  return `${endereco.logradouro || ''}, ${endereco.numero || 'S/N'}`;
 };

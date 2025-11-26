@@ -8,9 +8,9 @@ import UserInfo from './pages/UserInfo';
 import Cardapio from './pages/Cardapio';
 import Carrinho from './pages/Carrinho';
 import Cadastro from './pages/Cadastro';
-// import DashboardLoja from './pages/Dashboards/DashboardLoja';
-// import DashboardAdmin from './pages/Dashboards/DashboardAdmin';
 import ListaProdutos from './pages/ListaProdutos';
+import RecuperarSenha from './pages/RecuperarSenha';
+import RedefinirSenha from './pages/RedefinirSenha';
 import DetalhesProduto from './pages/DetalhesProduto';
 import HistoricoPedidos from './pages/HistoricoPedidos';
 
@@ -62,6 +62,8 @@ function App() {
         {/* --- ROTAS PÚBLICAS --- */}
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+        <Route path="/reset-password" element={<RedefinirSenha />} />
       </Routes>
     </>
   );

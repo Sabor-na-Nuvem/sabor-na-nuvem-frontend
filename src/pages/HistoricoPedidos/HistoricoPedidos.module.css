@@ -222,6 +222,9 @@
 .orderHeader {
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .orderDate {

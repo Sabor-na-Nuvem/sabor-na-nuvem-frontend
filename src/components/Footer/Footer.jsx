@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { FaGithub, FaLinkedin, FaEnvelope } from 'react-icons/fa';
 import styles from './Footer.module.css';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
 
@@ -23,13 +24,14 @@ const Footer = () => {
           {/* Coluna 1: Quem Somos */}
           <div className={styles.column}>
             <h4 className={styles.columnTitle}>Quem somos</h4>
-            <Link to="/restaurantes" className={styles.link}>
+            {/* TODO: Add páginas para isso */}
+            <Link to="/" className={styles.link}>
               Restaurantes
             </Link>
-            <Link to="/institucional" className={styles.link}>
+            <Link to="/" className={styles.link}>
               Institucional
             </Link>
-            <Link to="/privacidade" className={styles.link}>
+            <Link to="/" className={styles.link}>
               Privacidade
             </Link>
           </div>
@@ -43,14 +45,34 @@ const Footer = () => {
 
             <div className={styles.socials}>
               {/* Ícones de Mídia Social */}
-              <a href="#" className={styles.socialIcon} aria-label="Instagram">
-                📸
+              <a
+                href="https://github.com/Sabor-na-Nuvem"
+                className={styles.socialIcon}
+                aria-label="Repositório Github da Sabor na Nuvem"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaGithub size={24} />
               </a>
-              <a href="#" className={styles.socialIcon} aria-label="LinkedIn">
-                🔗
+
+              {/* LINKEDIN */}
+              <a
+                href="https://www.linkedin.com/in/joao-m-o-schmitz/"
+                className={styles.socialIcon}
+                aria-label="LinkedIn da Empresa"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaLinkedin size={24} />
               </a>
-              <a href="#" className={styles.socialIcon} aria-label="X (Twitter)">
-                ✖️
+
+              {/* E-MAIL */}
+              <a
+                href="mailto:jmatheus12349@gmail.com"
+                className={styles.socialIcon}
+                aria-label="E-mail de Contato"
+              >
+                <FaEnvelope size={24} />
               </a>
             </div>
           </div>

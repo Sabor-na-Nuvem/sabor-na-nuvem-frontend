@@ -1,6 +1,7 @@
+/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { LuChevronLeft, LuLoaderCircle, LuTriangleAlert } from 'react-icons/lu';
+import { LuChevronLeft, LuLoaderCircle, LuPencilLine, LuTriangleAlert } from 'react-icons/lu';
 import Button from '../../Button';
 import MapComponent from '../../MapComponent/MapComponent';
 import { CENTRO_BRASILIA } from '../../../data/locaisBrasilia';
@@ -9,10 +10,20 @@ import styles from './ConfirmarEnderecoModal.module.css';
 import shared from '../ModalShared.module.css';
 import AlertModal from '../AlertModal/AlertModal';
 import ModalWrapper from '../ModalWrapper';
+import { buscarEnderecoPorCoordenadas } from '../../../services/geocoding.service';
 
 // --- COMPONENTE DE CONTEÚDO INTERNO ---
 // Recebe 'onRequestClose' injetado automaticamente pelo ModalWrapper
-const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequestClose }) => {
+const FinalContent = ({
+  endereco,
+  onBack,
+  onConfirm,
+  onEdit,
+  setPendingAction,
+  onRequestClose,
+  readOnly = false,
+  titulo = 'Confirme a localização',
+}) => {
   const [isMapReady, setIsMapReady] = useState(false);
   const [currentAddress, setCurrentAddress] = useState(endereco);
   const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
@@ -51,6 +62,10 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
   };
 
   const handleConfirmClick = () => {
+    if (readOnly) {
+      handleAction(() => onConfirm(currentAddress));
+      return;
+    }
     if (!currentAddress.numero) {
       if (numberInputRef.current) numberInputRef.current.focus();
       showAlert(
@@ -63,6 +78,12 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
     handleAction(() => onConfirm(currentAddress));
   };
 
+  const handleEditClick = () => {
+    if (onEdit) {
+      handleAction(onEdit);
+    }
+  };
+
   const handleChangeNumero = (e) => {
     if (e.target.value.length <= 6) {
       setCurrentAddress((prev) => ({ ...prev, numero: e.target.value }));
@@ -71,31 +92,30 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
 
   // --- LÓGICA CRÍTICA: ATUALIZAÇÃO PELO MAPA (Drag & Drop) ---
   const handleMarkerDrag = async (id, newCoords) => {
+    if (readOnly) return;
+
     setIsUpdatingAddress(true);
     try {
-      // 1. Atualização Otimista: Move o pino visualmente imediatamente
-      setCurrentAddress((prev) => ({ ...prev, latitude: newCoords.lat, longitude: newCoords.lng }));
+      // Move o pino visualmente imediatamente
+      setCurrentAddress((prev) => ({
+        ...prev,
+        latitude: newCoords.lat,
+        longitude: newCoords.lng,
+      }));
 
-      // 2. Reverse Geocoding: Busca o endereço da nova coordenada
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${newCoords.lat}&lon=${newCoords.lng}&addressdetails=1&zoom=18`;
-      const res = await fetch(url, { headers: { 'User-Agent': 'SaborNaNuvemApp/1.0' } });
-      const data = await res.json();
+      // Chamada ao backend
+      const { data } = await buscarEnderecoPorCoordenadas(newCoords.lat, newCoords.lng);
 
-      if (data && data.address) {
-        const addr = data.address;
+      if (data) {
         setCurrentAddress((prev) => ({
           ...prev,
-          // Mantém dados antigos como fallback se a API não retornar
-          logradouro: addr.road || addr.pedestrian || addr.street || prev.logradouro,
-          numero: addr.house_number || prev.numero,
-          bairro: addr.suburb || addr.neighbourhood || prev.bairro,
-          cidade: addr.city || addr.town || prev.cidade,
-          estado: getStateCode(addr.state) || prev.estado,
-          cep: `${(addr.postcode || prev.cep).replace(/\D/g, '').slice(0, 5)}-${(
-            addr.postcode || prev.cep
-          )
-            .replace(/\D/g, '')
-            .slice(5)}`,
+          // Mantém dados antigos como fallback se a API retornar vazio
+          logradouro: data.logradouro || prev.logradouro,
+          numero: data.numero || prev.numero,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.cidade || prev.cidade,
+          estado: getStateCode(data.estado) || prev.estado,
+          cep: data.cep || prev.cep,
         }));
       }
     } catch (error) {
@@ -127,7 +147,7 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
         <button className={styles.backButton} onClick={() => handleAction(onBack)}>
           <LuChevronLeft size={24} />
         </button>
-        <h2 className={shared.modalTitle}>Confirme a localização</h2>
+        <h2 className={shared.modalTitle}>{titulo}</h2>
       </div>
 
       <div className={shared.modalContent}>
@@ -142,10 +162,21 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
               ref={numberInputRef}
               type="text"
               className={styles.inlineInput}
-              value={currentAddress.numero}
+              value={currentAddress.numero || ''}
               onChange={handleChangeNumero}
               placeholder="Nº"
-              disabled={isUpdatingAddress}
+              disabled={isUpdatingAddress || readOnly}
+              style={
+                readOnly
+                  ? {
+                      border: 'none',
+                      background: 'transparent',
+                      padding: 0,
+                      width: '3rem',
+                      color: 'var(--text-color)',
+                    }
+                  : {}
+              }
             />
 
             <span>
@@ -156,13 +187,15 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
           <span className={styles.cepText}>{currentAddress.cep}</span>
         </div>
 
-        <div className={styles.warningMessage}>
-          <LuTriangleAlert size={18} style={{ flexShrink: 0 }} />
-          <span>
-            Verifique se o <strong>número</strong> e a posição no <strong>mapa</strong> estão
-            corretos.
-          </span>
-        </div>
+        {!readOnly && (
+          <div className={styles.warningMessage}>
+            <LuTriangleAlert size={18} style={{ flexShrink: 0 }} />
+            <span>
+              Verifique se o <strong>número</strong> e a posição no <strong>mapa</strong> estão
+              corretos.
+            </span>
+          </div>
+        )}
 
         <div className={styles.mapWrapper}>
           {isMapReady ? (
@@ -171,8 +204,8 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
               center={mapCenter}
               markers={mapMarkers}
               zoom={18}
-              interactive={true}
-              onMarkerDragEnd={handleMarkerDrag}
+              interactive={!readOnly}
+              onMarkerDragEnd={!readOnly ? handleMarkerDrag : undefined}
             />
           ) : (
             <div className={styles.mapPlaceholderLoading}>
@@ -180,19 +213,29 @@ const FinalContent = ({ endereco, onBack, onConfirm, setPendingAction, onRequest
               <span>Carregando mapa...</span>
             </div>
           )}
-          <div className={styles.mapOverlayHint}>Arraste o pino para ajustar</div>
+          {!readOnly && <div className={styles.mapOverlayHint}>Arraste o pino para ajustar</div>}
         </div>
       </div>
 
       <div className={shared.modalFooter}>
-        <Button
-          variant="primary"
-          onClick={handleConfirmClick}
-          className={styles.fullButton}
-          disabled={isUpdatingAddress}
-        >
-          {isUpdatingAddress ? 'Atualizando...' : 'Confirmar Endereço'}
-        </Button>
+        <div style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'center' }}>
+          {/* Se for ReadOnly e tiver função de editar, mostra o botão de editar */}
+          {readOnly && onEdit && (
+            <Button variant="outline-red" onClick={handleEditClick} className={styles.fullButton}>
+              <LuPencilLine size={18} style={{ marginRight: 8 }} /> Editar Endereço
+            </Button>
+          )}
+
+          <Button
+            variant="primary"
+            onClick={handleConfirmClick}
+            className={styles.fullButton}
+            disabled={isUpdatingAddress}
+          >
+            {/* Muda o texto dependendo do contexto */}
+            {isUpdatingAddress ? 'Atualizando...' : readOnly ? 'Fechar' : 'Confirmar Endereço'}
+          </Button>
+        </div>
       </div>
 
       {alertInfo.isOpen && (
@@ -235,7 +278,10 @@ ConfirmarEnderecoFinalModal.propTypes = {
   endereco: PropTypes.object.isRequired,
   onBack: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
+  onEdit: PropTypes.func,
   onClose: PropTypes.func,
+  readOnly: PropTypes.bool,
+  titulo: PropTypes.string,
 };
 
 FinalContent.propTypes = {
@@ -251,8 +297,11 @@ FinalContent.propTypes = {
   }).isRequired,
   onBack: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
+  onEdit: PropTypes.func,
   setPendingAction: PropTypes.func.isRequired,
   onRequestClose: PropTypes.func,
+  readOnly: PropTypes.bool,
+  titulo: PropTypes.string,
 };
 
 export default ConfirmarEnderecoFinalModal;

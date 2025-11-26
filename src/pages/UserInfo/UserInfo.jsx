@@ -11,7 +11,16 @@ import EnderecoModal from '../../components/Modals/EnderecoModal';
 import AlertModal from '../../components/Modals/AlertModal';
 import ConfirmModal from '../../components/Modals/ConfirmModal';
 import { useAuth } from '../../contexts/AuthContext';
+import AtualizarSenhaModal from '../../components/Modals/AtualizarSenhaModal';
 import ConfirmarEnderecoFinalModal from '../../components/Modals/ConfirmarEnderecoModal/ConfirmarEnderecoFinalModal';
+import {
+  adicionarTelefone,
+  atualizarEndereco,
+  atualizarTelefone,
+  criarEndereco,
+  deletarConta,
+} from '../../services/usuario.service';
+import { requestEmailUpdate, updatePassword } from '../../services/auth.service';
 
 // --- COMPONENTE AUXILIAR (EditableRow) ---
 const EditableRow = ({
@@ -103,7 +112,7 @@ EditableRow.propTypes = {
 
 // --- COMPONENTE PRINCIPAL ---
 const UserInfo = () => {
-  const { user, loading, updateUser, logout } = useAuth();
+  const { user, loading, updateUser, refreshUser, logout } = useAuth();
 
   // Estados dos campos de usuário
   const [nome, setNome] = useState('');
@@ -111,6 +120,9 @@ const UserInfo = () => {
   const [celular, setCelular] = useState('');
   const [celularReserva, setCelularReserva] = useState('');
   const [endereco, setEndereco] = useState({});
+
+  // Estado temporário para o novo email enquanto aguarda a senha
+  const [pendingEmail, setPendingEmail] = useState('');
 
   const [savingFields, setSavingFields] = useState({});
   const [errors, setErrors] = useState({});
@@ -121,13 +133,18 @@ const UserInfo = () => {
     celularReserva: true,
   });
 
-  // Estado para controlar os modais de Endereco
+  // Modais de Endereço
   const [enderecoModalIsOpen, setEnderecoModalIsOpen] = useState(false);
   const [confirmarEnderecoModalIsOpen, setConfirmarEnderecoModalIsOpen] = useState(false);
   const [startEnderecoEditing, setStartEnderecoEditing] = useState(false);
 
-  // Estado para controlar o ConfirmModal
+  // Modais de Confirmação
   const [confirmModalIsOpen, setConfirmModalIsOpen] = useState(false);
+  const [confirmEmailModalIsOpen, setConfirmEmailModalIsOpen] = useState(false);
+
+  // Modal de Senha
+  const [senhaModalIsOpen, setSenhaModalIsOpen] = useState(false);
+
   // Estado para controlar o AlertModal
   const [alertInfo, setAlertInfo] = useState({
     isOpen: false,
@@ -178,6 +195,19 @@ const UserInfo = () => {
     setTimeout(() => {
       setConfirmarEnderecoModalIsOpen(true);
     }, 400);
+  };
+
+  const closeConfirmarEnderecoModal = () => {
+    setConfirmarEnderecoModalIsOpen(false);
+  };
+
+  // --- Handlers do AtualizarSenhaModal ---
+  const showSenhaModal = () => {
+    setSenhaModalIsOpen(true);
+  };
+
+  const closeSenhaModal = () => {
+    setSenhaModalIsOpen(false);
   };
 
   // Carrega dados iniciais
@@ -259,6 +289,15 @@ const UserInfo = () => {
     return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
+  const parseTelefone = (valorMascarado) => {
+    const apenasNumeros = valorMascarado.replace(/\D/g, '');
+    return {
+      ddd: apenasNumeros.substring(0, 2),
+      numero: apenasNumeros.substring(2),
+    };
+  };
+
+  // --- LÓGICA DE SALVAR CAMPO INDIVIDUAL ---
   const handleSave = async (fieldName) => {
     let valueToSave = '';
     if (fieldName === 'nome') valueToSave = nome;
@@ -272,12 +311,57 @@ const UserInfo = () => {
     setSavingFields((prev) => ({ ...prev, [fieldName]: true }));
 
     try {
-      // TODO: conectar com a API
-      await updateUser({ [fieldName]: valueToSave });
-      setDisabledFields((prev) => ({ ...prev, [fieldName]: true }));
+      // CASO 1: Atualizar NOME
+      if (fieldName === 'nome') {
+        await updateUser({ nome: valueToSave });
+      }
 
-      showAlert('Sucesso', `${capitalizeFirstLetter(fieldName)} atualizado!`, 'success');
+      // CASO 2: Atualizar EMAIL (Requer Senha)
+      if (fieldName === 'email') {
+        // Se o email não mudou, apenas cancela a edição
+        if (valueToSave === user.email) {
+          setDisabledFields((prev) => ({ ...prev, [fieldName]: true }));
+          setSavingFields((prev) => ({ ...prev, [fieldName]: false }));
+          return;
+        }
+
+        // Armazena o email novo e abre o modal de senha
+        setPendingEmail(valueToSave);
+        setConfirmEmailModalIsOpen(true);
+
+        setSavingFields((prev) => ({ ...prev, [fieldName]: false }));
+        return;
+      }
+
+      // CASO 3: Atualizar TELEFONES
+      if (fieldName === 'celular' || fieldName === 'celularReserva') {
+        const index = fieldName === 'celular' ? 0 : 1;
+        const telefoneExistente = user.telefones && user.telefones[index];
+        const { ddd, numero } = parseTelefone(valueToSave);
+
+        if (telefoneExistente) {
+          await atualizarTelefone(user.id, telefoneExistente.id, { ddd, numero });
+        } else {
+          await adicionarTelefone(user.id, { ddd, numero });
+        }
+
+        const novosTelefones = [...(user.telefones || [])];
+        if (telefoneExistente) {
+          novosTelefones[index] = { ...novosTelefones[index], ddd, numero };
+        } else {
+          novosTelefones[index] = { ddd, numero, id: 'temp' };
+          await refreshUser();
+        }
+      }
+
+      setDisabledFields((prev) => ({ ...prev, [fieldName]: true }));
+      showAlert(
+        'Sucesso',
+        `${capitalizeFirstLetter(fieldName === 'celularReserva' ? 'Celular Reserva' : fieldName)} atualizado!`,
+        'success'
+      );
     } catch (err) {
+      console.error(err);
       setErrors((prev) => ({ ...prev, [fieldName]: 'Erro ao salvar.' }));
       showAlert('Erro', 'Não foi possível salvar as alterações.', 'error');
     } finally {
@@ -293,27 +377,101 @@ const UserInfo = () => {
     if (name === 'celularReserva') setCelularReserva(value);
   };
 
+  // --- LÓGICA DE ATUALIZAR EMAIL (COM SENHA) ---
+  const handleConfirmEmailUpdate = async (senhaAtual) => {
+    try {
+      if (!senhaAtual) {
+        showAlert('Erro', 'Senha é obrigatória.', 'error');
+        return;
+      }
+
+      await requestEmailUpdate(pendingEmail, senhaAtual);
+
+      setConfirmEmailModalIsOpen(false);
+      setDisabledFields((prev) => ({ ...prev, email: true }));
+
+      showAlert(
+        'Verifique seu e-mail',
+        `Enviamos um link de confirmação para ${pendingEmail}. Clique nele para finalizar a alteração.`,
+        'success'
+      );
+
+      // Restaura o valor do input para o email atual até que a confirmação ocorra
+      setEmail(user.email);
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || 'Erro ao solicitar alteração.';
+      showAlert('Erro', msg, 'error');
+    }
+  };
+
+  // --- LÓGICA DE SALVAR ENDEREÇO ---
   const handleAtualizaEndereco = async (dadosEndereco) => {
     try {
-      // TODO: conectar com a API
-      await updateUser({ endereco: dadosEndereco });
+      const enderecoSanitizado = {
+        ...dadosEndereco,
+        estado: dadosEndereco.estado ? dadosEndereco.estado.toUpperCase() : '',
+      };
+
+      // Verifica se já existe endereço para decidir entre PUT ou POST
+      if (user.endereco && user.endereco.id) {
+        await atualizarEndereco(user.id, enderecoSanitizado);
+      } else {
+        await criarEndereco(user.id, enderecoSanitizado);
+      }
+
+      // Atualiza contexto
+      await refreshUser();
+
       setConfirmarEnderecoModalIsOpen(false);
       setStartEnderecoEditing(false);
 
       showAlert('Sucesso!', 'Endereço atualizado com sucesso!', 'success');
     } catch (error) {
+      console.error(error);
       showAlert('Erro', 'Não foi possível atualizar o endereço. Tente novamente.', 'error');
     }
   };
 
-  const handleDeletarUsuario = () => {
+  // --- LÓGICA DE EXCLUIR CONTA ---
+  const handleDeletarUsuario = async (senhaConfirmacao) => {
     try {
-      // TODO: conectar com a API
+      if (!senhaConfirmacao) {
+        showAlert('Erro', 'Senha é obrigatória para excluir a conta.', 'error');
+        return;
+      }
+      await deletarConta(senhaConfirmacao);
+
       // Salva uma "Flash Message" no storage para a próxima tela ler
       localStorage.setItem('delete_feedback', 'true');
-      logout();
+
+      await logout();
     } catch (error) {
-      showAlert('Erro', 'Não foi possível excluir a conta. Tente novamente.', 'error');
+      console.error(error);
+      const msg = error.response?.data?.message || 'Não foi possível excluir a conta.';
+      showAlert('Erro', msg, 'error');
+    }
+  };
+
+  // --- LÓGICA DE ATUALIZAR SENHA ---
+  const handleUpdatePassword = async ({ senhaAntiga, novaSenha }) => {
+    try {
+      await updatePassword(senhaAntiga, novaSenha);
+
+      setSenhaModalIsOpen(false);
+
+      showAlert(
+        'Senha Atualizada',
+        'Sua senha foi alterada com sucesso. Por segurança, suas outras sessões foram desconectadas.',
+        'success'
+      );
+    } catch (error) {
+      console.error(error);
+
+      const errorMsg = error.response?.data?.message || 'Não foi possível atualizar a senha.';
+      showAlert('Erro', errorMsg, 'error');
+
+      throw error;
     }
   };
 
@@ -400,6 +558,14 @@ const UserInfo = () => {
               >
                 Ver endereço
               </Button>
+
+              <Button
+                variant="outline-yellow"
+                className={styles.botaoEndereco}
+                onClick={showSenhaModal}
+              >
+                Atualizar senha
+              </Button>
             </div>
           </div>
         </div>
@@ -412,6 +578,8 @@ const UserInfo = () => {
       </div>
 
       {/* RENDERIZAÇÃO DOS MODAIS */}
+
+      {/* Modal de Endereco */}
       {enderecoModalIsOpen && (
         <EnderecoModal
           onClose={closeEnderecoModal}
@@ -421,14 +589,17 @@ const UserInfo = () => {
         />
       )}
 
+      {/* Modal de Confirmar Endereco */}
       {confirmarEnderecoModalIsOpen && (
         <ConfirmarEnderecoFinalModal
           endereco={endereco}
           onBack={showEnderecoModal}
           onConfirm={handleAtualizaEndereco}
+          onClose={closeConfirmarEnderecoModal}
         />
       )}
 
+      {/* Modal de Exclusão de Conta */}
       {confirmModalIsOpen && (
         <ConfirmModal
           title="CUIDADO!"
@@ -450,6 +621,39 @@ const UserInfo = () => {
         />
       )}
 
+      {/* Modal de Atualização de Email */}
+      {confirmEmailModalIsOpen && (
+        <ConfirmModal
+          title="Confirmar Alteração de E-mail"
+          description={
+            <>
+              Para sua segurança, digite sua <strong>senha atual</strong> para confirmar a alteração
+              do e-mail para: <br />
+              <br />
+              <strong>{pendingEmail}</strong>
+            </>
+          }
+          confirmText="Confirmar"
+          cancelText="Cancelar"
+          variant="primary"
+          onConfirm={handleConfirmEmailUpdate}
+          onClose={() => setConfirmEmailModalIsOpen(false)}
+          inputPassword
+        />
+      )}
+
+      {/* Modal de Atualizar Senha */}
+      {senhaModalIsOpen && (
+        <AtualizarSenhaModal
+          title="Atualização de Senha"
+          description="Complete os campos abaixo para atualizar sua senha."
+          onConfirm={handleUpdatePassword}
+          onCancel={() => {}}
+          onClose={closeSenhaModal}
+        />
+      )}
+
+      {/* Modal de Alerta */}
       {alertInfo.isOpen && (
         <AlertModal
           title={alertInfo.title}

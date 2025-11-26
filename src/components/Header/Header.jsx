@@ -147,18 +147,45 @@ const Header = () => {
           <Link to="/" onClick={toggleMenu}>
             Início
           </Link>
-          <Link to="/cardapio" onClick={toggleMenu}>
-            Cardápio
-          </Link>
+          {(!user || user.cargo === 'CLIENTE') && (
+            <>
+              <Link to="/cardapio" onClick={toggleMenu}>
+                Cardápio
+              </Link>
+              <Link
+                to="/carrinho"
+                onClick={toggleMenu}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <LuShoppingCart size={18} />
+                Carrinho ({valorTotalFormatado})
+              </Link>
+            </>
+          )}
 
           {user ? (
             <>
-              <Link to="/minha-conta/historico-pedidos" onClick={toggleMenu}>
-                Meus Pedidos
-              </Link>
-              <Link to="/minha-conta" onClick={toggleMenu}>
-                Minha Conta
-              </Link>
+              {/* TODO: Add rotas de admin e funcionario */}
+              {user.cargo === 'ADMIN' && (
+                <Link to="/" onClick={toggleMenu}>
+                  Painel Admin
+                </Link>
+              )}
+              {user.cargo === 'FUNCIONARIO' && (
+                <Link to="/" onClick={toggleMenu}>
+                  Área da Loja
+                </Link>
+              )}
+              {user.cargo === 'CLIENTE' && (
+                <>
+                  <Link to="/minha-conta/historico-pedidos" onClick={toggleMenu}>
+                    Meus Pedidos
+                  </Link>
+                  <Link to="/minha-conta" onClick={toggleMenu}>
+                    Minha Conta
+                  </Link>
+                </>
+              )}
               <button onClick={handleLogoutClick} className={styles.mobileLogout}>
                 <LuLogOut size={18} style={{ marginRight: 8 }} /> Sair
               </button>

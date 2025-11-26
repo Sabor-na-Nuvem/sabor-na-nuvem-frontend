@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import logoImg from '../../assets/sabor-na-nuvem-logo.png';
-import googleLogo from '../../assets/google-logo.png';
+// import googleLogo from '../../assets/google-logo.png';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import AlertModal from '../../components/Modals/AlertModal';
@@ -10,6 +10,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import styles from './Login.module.css';
 
 const Login = () => {
+  const [searchParams] = useSearchParams();
+  const messageInParams = searchParams.get('message');
+  const errorInParams = searchParams.get('error');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -18,6 +21,7 @@ const Login = () => {
   const [emailError, setEmailError] = useState(null);
   const [senhaError, setSenhaError] = useState(null);
 
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [alertInfo, setAlertInfo] = useState({
     isOpen: false,
@@ -26,11 +30,23 @@ const Login = () => {
     type: 'success',
   });
 
-  // Efeito para verificar Logout
   useEffect(() => {
+    const sessionExpired = localStorage.getItem('session_expired');
     const logoutFeedback = localStorage.getItem('logout_feedback');
     const deleteFeedback = localStorage.getItem('delete_feedback');
-    if (logoutFeedback) {
+
+    // Prioridade 1: Sessão Expirada (Erro)
+    if (sessionExpired) {
+      setAlertInfo({
+        isOpen: true,
+        title: 'Sessão Expirada',
+        msg: 'Sua sessão expirou por segurança. Por favor, faça login novamente.',
+        type: 'error',
+      });
+      localStorage.removeItem('session_expired');
+
+      // Prioridade 2: Logout Voluntário (Sucesso)
+    } else if (logoutFeedback) {
       setAlertInfo({
         isOpen: true,
         title: 'Até logo!',
@@ -38,16 +54,36 @@ const Login = () => {
         type: 'success',
       });
       localStorage.removeItem('logout_feedback');
+
+      // Prioridade 3: Conta Deletada (Info/Primary)
     } else if (deleteFeedback) {
       setAlertInfo({
         isOpen: true,
         title: 'Que pena ver você partir...',
-        msg: 'Sua conta foi excluída com sucesso. Esperamos te ver por aqui novamente em breve para novos pedidos!',
+        msg: 'Sua conta foi excluída com sucesso. Esperamos te ver por aqui novamente em breve!',
         type: 'primary',
       });
       localStorage.removeItem('delete_feedback');
+
+      // Prioridade 4: Email verificado (Sucesso)
+    } else if (messageInParams) {
+      setAlertInfo({
+        isOpen: true,
+        title: 'E-mail verificado!',
+        msg: 'Seu e-mail foi verificado com sucesso. Agora você pode realizar seu login!',
+        type: 'success',
+      });
+
+      // Prioridade 4: Email verificado (Sucesso)
+    } else if (errorInParams) {
+      setAlertInfo({
+        isOpen: true,
+        title: 'Erro na verificação!',
+        msg: 'Houve um erro na verificação do seu e-mail. Tente novamente.',
+        type: 'error',
+      });
     }
-  }, []);
+  }, [messageInParams, errorInParams]);
 
   // Fecha Alerta e Redireciona
   const closeAlert = () => {
@@ -116,15 +152,35 @@ const Login = () => {
     const hasErrors = emailValidation || senhaValidation;
 
     if (!hasErrors) {
-      // TODO: conectar com a API
+      setIsLoading(true);
       try {
-        await login(email, senha);
+        const userData = await login(email, senha);
 
-        if (email.includes('admin')) navigate('/admin');
-        else if (email.includes('func')) navigate('/portal');
-        else navigate('/');
+        switch (userData.cargo) {
+          case 'ADMIN':
+            // TODO: Add rota /admin
+            navigate('/', { replace: true });
+            break;
+          case 'FUNCIONARIO':
+            // TODO: Add rota /portal
+            navigate('/', { replace: true });
+            break;
+          case 'CLIENTE':
+          default:
+            navigate('/', { replace: true });
+            break;
+        }
       } catch (error) {
-        console.log('Falha no login.');
+        const msgErro =
+          error.response?.data?.message || 'Falha ao realizar login. Verifique suas credenciais.';
+
+        setAlertInfo({
+          isOpen: true,
+          title: 'Acesso Negado',
+          msg: msgErro,
+          type: 'error',
+        });
+        setIsLoading(false);
       }
     }
   };
@@ -171,22 +227,23 @@ const Login = () => {
           </div>
 
           {/* Botão Entrar */}
-          <Button type="submit" variant="primary" className={styles.fullWidth}>
-            Entrar
+          <Button type="submit" variant="primary" className={styles.fullWidth} disabled={isLoading}>
+            {isLoading ? 'Entrando...' : 'Entrar'}
           </Button>
 
           <p className={styles.orDivider}>Ou...</p>
 
-          {/* Botão Google (Usando variante outline-yellow) */}
-          <Button
+          {/* TODO: Add integração de login com o google */}
+          {/* <Button
             type="button"
             variant="outline-yellow"
             className={`${styles.fullWidth} ${styles.googleButton}`}
+            disabled={isLoading}
           >
             <span>Continuar com</span>
 
             <img src={googleLogo} alt="Logo do Google" style={{ height: '1rem', width: 'auto' }} />
-          </Button>
+          </Button> */}
         </form>
 
         {/* Link Voltar */}
@@ -207,7 +264,7 @@ const Login = () => {
           title={alertInfo.title}
           description={alertInfo.msg}
           variant={alertInfo.type === 'success' ? 'outline-success' : 'outline-yellow'}
-          icon="success"
+          icon={alertInfo.type === 'error' ? 'error' : 'success'}
           onClose={closeAlert}
         />
       )}

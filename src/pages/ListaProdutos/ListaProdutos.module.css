@@ -4,6 +4,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
+  row-gap: 2rem;
   margin-top: 20px;
   align-items: stretch;
 }
@@ -39,20 +40,32 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  width: 100%;
+  align-items: center;
+  width: 150px;
+  height: 150px;
   padding-top: 10px;
+  padding-bottom: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
 .produtoImage {
+  border-radius: 16px;
+  margin: 10px;
   width: 100%;
-  height: auto;
-  max-width: 120px;
-  object-fit: contain;
-  flex-grow: 0;
+  height: 100%;
+  object-fit: cover;
+  max-width: 100%;
+  box-shadow: 0 0 5px var(--color-surface-subtle);
 }
 
 .produtoNameBox {
+  display: flex;
+  text-align: center;
+  flex-direction: column;
+  justify-content: center;
   width: 100%;
+  height: 5rem;
   padding: 5px 0;
   margin-bottom: 5px;
 
@@ -61,7 +74,7 @@
 }
 
 .produtoName {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text);
 
@@ -71,11 +84,22 @@
   padding: 0 5px;
 }
 
+.produtoPrice {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  padding-top: 10px;
+}
+
 /* --- Desktop (Breakpoint) --- */
 @media (min-width: 1024px) {
   .produtoList {
     justify-content: center;
-    gap: 20px;
+    gap: 2rem;
     max-width: var(--max-width); 
     margin: 20px auto; 
   }

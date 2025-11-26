@@ -35,27 +35,31 @@ const GrupoPersonalizavel = ({ grupo, onSelectionChange, selectedValues }) => {
 
       <div className={`${styles.optionsWrapper} ${isOpen ? styles.open : ''}`}>
         <div className={styles.options}>
-          {grupo.modificadores.map((modificador) => (
-            <label key={modificador.id} className={styles.optionItem}>
-              <input
-                type={isSelecaoUnica ? 'radio' : 'checkbox'}
-                name={`grupo-${grupo.id}`}
-                value={modificador.id}
-                checked={
-                  isSelecaoUnica
-                    ? selectedValues === modificador.id
-                    : Array.isArray(selectedValues) && selectedValues.includes(modificador.id)
-                }
-                onChange={(e) => handleOptionChange(modificador.id, e.target.checked)}
-              />
-              {modificador.nome}
-              {modificador.precoAdicional > 0 && (
-                <span className={styles.optionPrice}>
-                  + R${modificador.precoAdicional.toFixed(2)}
-                </span>
-              )}
-            </label>
-          ))}
+          {grupo.modificadores ? (
+            grupo.modificadores.map((modificador) => (
+              <label key={modificador.id} className={styles.optionItem}>
+                <input
+                  type={isSelecaoUnica ? 'radio' : 'checkbox'}
+                  name={`grupo-${grupo.id}`}
+                  value={modificador.id}
+                  checked={
+                    isSelecaoUnica
+                      ? selectedValues === modificador.id
+                      : Array.isArray(selectedValues) && selectedValues.includes(modificador.id)
+                  }
+                  onChange={(e) => handleOptionChange(modificador.id, e.target.checked)}
+                />
+                {modificador.nome}
+                {Number(modificador.valorAdicional) > 0 && (
+                  <span className={styles.optionPrice}>
+                    + R${Number(modificador.valorAdicional).toFixed(2)}
+                  </span>
+                )}
+              </label>
+            ))
+          ) : (
+            <div style={{ color: 'var(--color-primary)' }}>Sob Consulta</div>
+          )}
         </div>
       </div>
     </div>
